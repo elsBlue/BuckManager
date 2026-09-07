@@ -23,6 +23,9 @@ interface TransactionDao {
 
     @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun deleteTransaction(id: Long)
+
+    @Query("UPDATE transactions SET category = :toCategory WHERE category = :fromCategory")
+    suspend fun reassignCategory(fromCategory: String, toCategory: String)
 }
 
 @Dao

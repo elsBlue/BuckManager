@@ -60,6 +60,10 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
     private val _headerCardsConfig = MutableStateFlow(HeaderCardsConfig())
     val headerCardsConfig: StateFlow<HeaderCardsConfig> = _headerCardsConfig.asStateFlow()
 
+    private val _dataLoaded = MutableStateFlow(false)
+    val dataLoaded: StateFlow<Boolean> = _dataLoaded.asStateFlow()
+    private var goalFlowStarted = false
+
     private val _hasSeenOnboarding = MutableStateFlow(false)
     val hasSeenOnboarding: StateFlow<Boolean> = _hasSeenOnboarding.asStateFlow()
 
@@ -177,6 +181,7 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadAllData() {
         viewModelScope.launch(Dispatchers.IO) {
+            try {
             // Load transactions
             val txList = db.transactionDao().getAllTransactions()
             _transactions.value = txList
@@ -220,14 +225,17 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             // Fund goal (observed continuously to sync with widget)
-            viewModelScope.launch(Dispatchers.IO) {
-                db.settingDao().getSettingFlow("fund_goal_config").collect { entity ->
-                    entity?.value?.let { fgStr ->
-                        try {
-                            val fg = json.decodeFromString<FundGoalConfig>(fgStr)
-                            _fundGoal.value = fg
-                            GoalAppWidgetProvider.saveGoalToPrefs(getApplication(), fg)
-                        } catch (e: Exception) {}
+            if (!goalFlowStarted) {
+                goalFlowStarted = true
+                viewModelScope.launch(Dispatchers.IO) {
+                    db.settingDao().getSettingFlow("fund_goal_config").collect { entity ->
+                        entity?.value?.let { fgStr ->
+                            try {
+                                val fg = json.decodeFromString<FundGoalConfig>(fgStr)
+                                _fundGoal.value = fg
+                                GoalAppWidgetProvider.saveGoalToPrefs(getApplication(), fg)
+                            } catch (e: Exception) {}
+                        }
                     }
                 }
             }
@@ -266,6 +274,15 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
             if (!_isThemeCustomized.value) {
                 applyThemePreset(_isDarkMode.value)
             }
+            } finally {
+                _dataLoaded.value = true
+            }
+        }
+    }
+
+    fun refreshTransactions() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _transactions.value = db.transactionDao().getAllTransactions()
         }
     }
 
@@ -438,22 +455,26 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateEnvelope(updated: Envelope) {
-        if (updated.id == "main") return // Main is a calculated buffer
-
         viewModelScope.launch(Dispatchers.IO) {
-            markCustomized()
             val oldList = _envelopes.value
-            
-            // Calculate sum of all other envelopes (excluding main and the one being updated)
+            val previous = oldList.find { it.id == updated.id }
+            val lookChanged = previous != null && previous.copy(percentage = 0) != updated.copy(percentage = 0)
+            if (lookChanged) markCustomized()
+
+            if (updated.id == "main") {
+                val newList = oldList.map { env ->
+                    if (env.id == "main") updated.copy(percentage = env.percentage) else env
+                }
+                _envelopes.value = newList
+                saveSetting("envelopes_config", json.encodeToString(newList))
+                return@launch
+            }
+
             val otherSum = oldList.filter { it.id != "main" && it.id != updated.id }.sumOf { it.percentage }
-            
-            // Cap the new percentage so it doesn't exceed 100% total
             val cappedPercentage = minOf(updated.percentage, (100 - otherSum).coerceAtLeast(0))
             val finalUpdated = updated.copy(percentage = cappedPercentage)
-            
-            // Main envelope takes whatever is left
             val mainPercentage = (100 - otherSum - cappedPercentage).coerceAtLeast(0)
-            
+
             val newList = oldList.map { env ->
                 when (env.id) {
                     updated.id -> finalUpdated
@@ -461,7 +482,7 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
                     else -> env
                 }
             }
-            
+
             _envelopes.value = newList
             saveSetting("envelopes_config", json.encodeToString(newList))
         }
@@ -492,8 +513,10 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun deleteEnvelope(id: String) {
-        if (id == "main") return // Protect main envelope
+        if (id == "main") return
         viewModelScope.launch(Dispatchers.IO) {
+            db.transactionDao().reassignCategory(id, "main")
+            _transactions.value = db.transactionDao().getAllTransactions()
             val listWithoutDeleted = _envelopes.value.filter { it.id != id }
             val otherSum = listWithoutDeleted.filter { it.id != "main" }.sumOf { it.percentage }
             val newList = listWithoutDeleted.map { env ->
@@ -559,9 +582,34 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
     fun updateFundGoal(config: FundGoalConfig) {
         viewModelScope.launch(Dispatchers.IO) {
             markCustomized()
-            _fundGoal.value = config
-            saveSetting("fund_goal_config", json.encodeToString(config))
-            GoalAppWidgetProvider.saveGoalToPrefs(getApplication(), config)
+            val old = _fundGoal.value
+            val delta = config.currentAmount - old.currentAmount
+            val applied = if (delta > 0) {
+                val room = (getNetWorth() - old.currentAmount).coerceAtLeast(0.0)
+                minOf(delta, room)
+            } else {
+                maxOf(delta, -old.currentAmount)
+            }
+            val saved = config.copy(currentAmount = old.currentAmount + applied)
+            _fundGoal.value = saved
+            saveSetting("fund_goal_config", json.encodeToString(saved))
+            GoalAppWidgetProvider.saveGoalToPrefs(getApplication(), saved)
+
+            if (applied != 0.0) {
+                val dateIso = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }.format(Date())
+                db.transactionDao().insertTransaction(
+                    TransactionEntity(
+                        type = "expense",
+                        amount = applied,
+                        category = "goal",
+                        date = dateIso,
+                        description = if (applied > 0) "Deposit to ${saved.name}" else "Withdraw from ${saved.name}"
+                    )
+                )
+                _transactions.value = db.transactionDao().getAllTransactions()
+            }
         }
     }
 

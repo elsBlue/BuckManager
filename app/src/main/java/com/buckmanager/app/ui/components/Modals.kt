@@ -1099,9 +1099,8 @@ fun SettingsModal(
                         Column {
                             // Theme Row
                             val isCustomUnlocked = !isCustomizationLocked
-                            
-                            if (!isThemeCustomized) {
-                                Row(
+
+                            Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
@@ -1190,7 +1189,6 @@ fun SettingsModal(
                                 }
 
                                 Divider(color = if (isDarkMode) Color(0xFF282436) else Color(0xFFE2E8F0))
-                            }
 
                             // Daily Reminder Row
                             // Currency Row

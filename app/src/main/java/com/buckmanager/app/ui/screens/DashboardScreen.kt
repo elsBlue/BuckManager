@@ -58,7 +58,8 @@ fun DashboardScreen(
     onAddEnvelopeClick: () -> Unit,
     onEditHeaderCard: (String) -> Unit,
     onEditFundGoal: () -> Unit,
-    onEditBackground: () -> Unit
+    onEditBackground: () -> Unit,
+    onAddIncome: () -> Unit
 ) {
     val context = LocalContext.current
     val globalBg by viewModel.globalBackground.collectAsState()
@@ -72,7 +73,6 @@ fun DashboardScreen(
 
     var showGoalDepositModal by remember { mutableStateOf(false) }
     var showPremiumModal by remember { mutableStateOf(false) }
-    var showTransactionBottomSheet by remember { mutableStateOf(false) }
     val monetization by viewModel.monetization.collectAsState(initial = MonetizationState())
 
     val hideBalances by viewModel.hideBalances.collectAsState()
@@ -394,7 +394,7 @@ fun DashboardScreen(
             if (transactions.isEmpty()) {
                 item {
                     Surface(
-                        onClick = { showTransactionBottomSheet = true },
+                        onClick = onAddIncome,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(AppShape.card),
                         color = if (isDarkMode) Color(0xFF1C1929) else Color.White,
@@ -807,12 +807,13 @@ fun DashboardScreen(
                         }
 
                         if (env.id != "main") {
-                            // Allocation Slider
+                            var sliderPct by remember(env.id, env.percentage) { mutableFloatStateOf(env.percentage.toFloat()) }
                             @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
                             androidx.compose.material3.Slider(
-                                value = env.percentage.toFloat(),
-                                onValueChange = { newValue ->
-                                    viewModel.updateEnvelope(env.copy(percentage = newValue.toInt()))
+                                value = sliderPct,
+                                onValueChange = { sliderPct = it },
+                                onValueChangeFinished = {
+                                    viewModel.updateEnvelope(env.copy(percentage = sliderPct.toInt()))
                                 },
                                 valueRange = 0f..100f,
                                 steps = 99,
@@ -828,7 +829,7 @@ fun DashboardScreen(
                                     )
                                 },
                                 track = {
-                                    val fraction = env.percentage.toFloat() / 100f
+                                    val fraction = sliderPct / 100f
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -892,15 +893,6 @@ fun DashboardScreen(
                 showPremiumModal = false
             }
         )
-
-        if (showTransactionBottomSheet) {
-            TransactionBottomSheet(
-                viewModel = viewModel,
-                envelopes = envelopes,
-                isDarkMode = isDarkMode,
-                onDismiss = { showTransactionBottomSheet = false }
-            )
-        }
     }
 }
 
@@ -910,6 +902,7 @@ fun TransactionBottomSheet(
     viewModel: BuckViewModel,
     envelopes: List<Envelope>,
     isDarkMode: Boolean,
+    initialType: String = "expense",
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -924,7 +917,7 @@ fun TransactionBottomSheet(
     val expenseActiveBg = if (isDarkMode) Color(0xFF3A1A2A) else Color(0xFFFDF0F2)
     val incomeActiveBg = if (isDarkMode) Color(0xFF1A3A2A) else Color(0xFFE8F8EE)
 
-    var type by remember { mutableStateOf("expense") } // "expense" or "income"
+    var type by remember { mutableStateOf(initialType) }
     var amountText by remember { mutableStateOf("") }
     var selectedCategory by remember {
         mutableStateOf(envelopes.firstOrNull { it.id != "main" }?.id ?: envelopes.firstOrNull()?.id ?: "needs")
@@ -1066,6 +1059,7 @@ fun TransactionBottomSheet(
                         onDismiss()
                     }
                 },
+                enabled = (amountText.toDoubleOrNull() ?: 0.0) > 0,
                 modifier = Modifier.fillMaxWidth().height(AppSpacing.touchTarget),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (type == "expense") expenseColor else incomeColor

@@ -1513,6 +1513,7 @@ fun EnvelopeEditorModal(
 
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Envelope", "Look", "Shape")
+    var confirmDelete by remember { mutableStateOf(false) }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
@@ -1900,7 +1901,7 @@ fun EnvelopeEditorModal(
             ) {
                 if (envelope.id != "main") {
                     OutlinedButton(
-                        onClick = { onDelete(envelope.id); onDismiss() },
+                        onClick = { confirmDelete = true },
                         modifier = Modifier.weight(1f).height(48.dp),
                         shape = RoundedCornerShape(AppShape.button),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
@@ -1951,6 +1952,24 @@ fun EnvelopeEditorModal(
                 }
             }
         }
+    }
+
+    if (confirmDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = { Text("Delete ${envelope.name}?") },
+            text = { Text("Spending in this envelope moves to Main. This cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDelete(envelope.id)
+                    confirmDelete = false
+                    onDismiss()
+                }) { Text("Delete", color = Color.Red, fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDelete = false }) { Text("Cancel") }
+            }
+        )
     }
 }
 
@@ -2267,6 +2286,7 @@ fun AddEnvelopeModal(
                                 borderRight = borderRight,
                                 borderBottom = borderBottom,
                                 borderLeft = borderLeft,
+                                borderColorHex = borderColorHex,
                                 paddingTop = paddingTop,
                                 paddingRight = paddingRight,
                                 paddingBottom = paddingBottom,
@@ -2278,6 +2298,7 @@ fun AddEnvelopeModal(
                         )
                         onDismiss()
                     },
+                    enabled = name.isNotBlank(),
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     shape = RoundedCornerShape(AppShape.button),
                     colors = ButtonDefaults.buttonColors(containerColor = GoldAccent)

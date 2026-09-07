@@ -10,6 +10,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -58,6 +59,17 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
         val userEmail by viewModel.userEmail.collectAsState()
         val userProfilePicUrl by viewModel.userProfilePicUrl.collectAsState()
         val hasSeenOnboarding by viewModel.hasSeenOnboarding.collectAsState()
+        val dataLoaded by viewModel.dataLoaded.collectAsState()
+
+        if (!dataLoaded) {
+            Box(
+                modifier = Modifier.fillMaxSize().background(if (isSystemInDarkTheme()) DarkBackground else AppChrome.pageLight),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = GoldAccent)
+            }
+            return@BuckManagerTheme
+        }
 
         val startDestination = if (!hasSeenOnboarding) "onboarding" else if (userEmail == null) "login" else "dashboard"
 
@@ -68,7 +80,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
         DisposableEffect(lifecycleOwner) {
             val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
                 if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                    viewModel.loadAllData()
+                    viewModel.refreshTransactions()
                 }
             }
             lifecycleOwner.lifecycle.addObserver(observer)
@@ -84,6 +96,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
         var editingEnvelope by remember { mutableStateOf<Envelope?>(null) }
         var showAddEnvelope by remember { mutableStateOf(false) }
         var showTransactionSheet by remember { mutableStateOf(false) }
+        var transactionSheetType by remember { mutableStateOf("expense") }
         var editingHeaderCard by remember { mutableStateOf<String?>(null) }
         var showFundGoalEditor by remember { mutableStateOf(false) }
         var showBackgroundEditor by remember { mutableStateOf(false) }
@@ -212,7 +225,11 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                             onAddEnvelopeClick = { showAddEnvelope = true },
                             onEditHeaderCard = { cardKey -> editingHeaderCard = cardKey },
                             onEditFundGoal = { showFundGoalEditor = true },
-                            onEditBackground = { showBackgroundEditor = true }
+                            onEditBackground = { showBackgroundEditor = true },
+                            onAddIncome = {
+                                transactionSheetType = "income"
+                                showTransactionSheet = true
+                            }
                         )
                     }
 
@@ -246,7 +263,10 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                             restoreState = true
                         }
                     },
-                    onAdd = { showTransactionSheet = true },
+                    onAdd = {
+                        transactionSheetType = "expense"
+                        showTransactionSheet = true
+                    },
                     onSettings = { showSettings = true },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -261,6 +281,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                     viewModel = viewModel,
                     envelopes = envelopes,
                     isDarkMode = isDarkMode,
+                    initialType = transactionSheetType,
                     onDismiss = { showTransactionSheet = false }
                 )
             }
