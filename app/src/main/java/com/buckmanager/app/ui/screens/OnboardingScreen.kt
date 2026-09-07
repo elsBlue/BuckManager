@@ -15,6 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.buckmanager.app.ui.AppChrome
+import com.buckmanager.app.ui.AppShape
 import com.buckmanager.app.ui.GoldAccent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
@@ -49,8 +51,8 @@ val features = listOf(
 
 @Composable
 fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
-    val bgColor = if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF8FAFC)
-    val surfaceColor = if (isDarkMode) Color(0xFF181C26) else Color(0xFFFFFFFF)
+    val bgColor = if (isDarkMode) AppChrome.pageDark else AppChrome.pageLight
+    val surfaceColor = if (isDarkMode) AppChrome.rowDark else AppChrome.rowLight
     val textColor = if (isDarkMode) Color.White else Color(0xFF121926)
     val subtitleColor = if (isDarkMode) Color(0xFFA0A0AB) else Color(0xFF5A667A)
 
@@ -62,7 +64,7 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp, vertical = 48.dp),
+                .padding(horizontal = 20.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.weight(0.3f))
@@ -115,7 +117,7 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
             // Features List
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 features.forEach { feature ->
                     Row(
@@ -125,7 +127,7 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
                         Box(
                             modifier = Modifier
                                 .size(48.dp)
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(AppShape.chip))
                                 .background(surfaceColor),
                             contentAlignment = Alignment.Center
                         ) {
@@ -174,7 +176,7 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
             // Action Button
             Button(
                 onClick = onFinish,
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(AppShape.button),
                 colors = ButtonDefaults.buttonColors(containerColor = GoldAccent),
                 modifier = Modifier
                     .fillMaxWidth()

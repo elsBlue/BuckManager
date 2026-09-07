@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.buckmanager.app.ui.AppShape
 import kotlin.math.roundToInt
 
 @Composable
@@ -154,16 +155,17 @@ fun RichColorPicker(
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(AppShape.chip))
                     .background(Color.LightGray)
                     .background(currentColor)
-                    .border(1.dp, border, RoundedCornerShape(12.dp))
+                    .border(1.dp, border, RoundedCornerShape(AppShape.chip))
             )
             OutlinedTextField(
                 value = selectedColorHex,
                 onValueChange = { onColorSelected(it) },
                 label = { Text("Hex", color = textColor.copy(alpha = 0.7f)) },
                 modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(AppShape.button),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = textColor,
                     unfocusedTextColor = textColor,

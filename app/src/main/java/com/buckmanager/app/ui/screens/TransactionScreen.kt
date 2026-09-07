@@ -22,7 +22,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.buckmanager.app.ui.AppShape
 import com.buckmanager.app.ui.AppSpacing
+import com.buckmanager.app.ui.AppStroke
 import com.buckmanager.app.ui.GoldAccent
 import com.buckmanager.app.ui.components.UniversalHeader
 import com.buckmanager.app.ui.components.parseHexColor
@@ -122,7 +124,8 @@ fun TransactionScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(AppShape.card))
+                        .border(AppStroke.thin, inputBorder, RoundedCornerShape(AppShape.card))
                         .background(cardBg)
                         .padding(20.dp)
                 ) {
@@ -229,7 +232,7 @@ fun TransactionScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
+                            .clip(RoundedCornerShape(AppShape.card))
                             .background(cardBg)
                             .padding(20.dp),
                         contentAlignment = Alignment.Center
@@ -248,7 +251,7 @@ fun TransactionScreen(
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(AppShape.card),
                         colors = CardDefaults.cardColors(containerColor = cardBg)
                     ) {
                         Row(
@@ -318,7 +321,7 @@ fun TransactionScreen(
                 .padding(end = 20.dp, bottom = 16.dp),
             containerColor = Color(0xFFFCBF36),
             contentColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(AppShape.button)
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add Transaction")
         }

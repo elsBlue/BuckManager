@@ -3,6 +3,8 @@ package com.buckmanager.app.ui
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -12,7 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 val GoldAccent = Color(0xFFF5B041)
@@ -26,6 +30,56 @@ val WantsColor = Color(0xFF38BDF8)
 val SavingsColor = Color(0xFFF5B041)
 val ExpenseRed = Color(0xFFFB7185)
 val TextDim = Color(0xFF9CA3AF)
+
+/** Radii taken from the dashboard: chips 14, cards 20, overlay/nav 24, buttons/fields 16. */
+object AppShape {
+    val bar: Dp = 4.dp
+    val tick: Dp = 8.dp
+    val chip: Dp = 14.dp
+    val button: Dp = 16.dp
+    val card: Dp = 20.dp
+    val panel: Dp = 24.dp
+    val hero: Dp = 28.dp
+}
+
+object AppStroke {
+    val thin: Dp = 1.dp
+}
+
+object AppChrome {
+    val pageDark = Color(0xFF0F1117)
+    val pageLight = Color(0xFFF5F6FA)
+    val rowDark = Color(0xFF181C26)
+    val rowLight = Color(0xFFFFFFFF)
+    val mutedDark = Color(0xFF2A273C)
+    val mutedLight = Color(0xFFE2E8F0)
+    val textDark = Color.White
+    val textLight = Color(0xFF121926)
+    val hintDark = Color(0xFF9CA3AF)
+    val hintLight = Color(0xFF5A667A)
+    val blue = Color(0xFF3673FC)
+}
+
+@Composable
+fun appTextFieldColors(isDarkMode: Boolean): TextFieldColors {
+    val text = if (isDarkMode) AppChrome.textDark else AppChrome.textLight
+    val hint = if (isDarkMode) AppChrome.hintDark else AppChrome.hintLight
+    val border = if (isDarkMode) AppChrome.mutedDark else Color(0xFFCBD5E1)
+    val container = if (isDarkMode) Color(0xFF181C26) else Color(0xFFF4F7FE)
+    return OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = GoldAccent,
+        unfocusedBorderColor = border,
+        focusedContainerColor = container,
+        unfocusedContainerColor = container,
+        focusedTextColor = text,
+        unfocusedTextColor = text,
+        cursorColor = GoldAccent,
+        focusedLabelColor = GoldAccent,
+        unfocusedLabelColor = hint,
+        focusedPlaceholderColor = hint,
+        unfocusedPlaceholderColor = hint
+    )
+}
 
 private val DarkColorScheme = darkColorScheme(
     primary = GoldAccent,
@@ -42,7 +96,7 @@ private val LightColorScheme = lightColorScheme(
     primary = GoldAccent,
     secondary = WantsColor,
     tertiary = SavingsColor,
-    background = Color(0xFFF8FAFC),
+    background = Color(0xFFF5F6FA),
     surface = Color(0xFFFFFFFF),
     onPrimary = Color.White,
     onBackground = Color(0xFF121926),

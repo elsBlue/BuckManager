@@ -40,7 +40,11 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import coil.compose.AsyncImage
 import com.buckmanager.app.model.*
+import com.buckmanager.app.ui.AppChrome
+import com.buckmanager.app.ui.AppShape
+import com.buckmanager.app.ui.AppStroke
 import com.buckmanager.app.ui.GoldAccent
+import com.buckmanager.app.ui.appTextFieldColors
 import androidx.core.graphics.toColorInt
 import androidx.compose.ui.platform.LocalContext
 import com.buckmanager.app.widget.GoalAppWidgetProvider
@@ -271,14 +275,8 @@ fun FundGoalEditorModal(
                             onValueChange = { name = it },
                             label = { Text("Goal Name", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = GoldAccent,
-                                unfocusedBorderColor = sheetBorder,
-                                focusedContainerColor = sheetBg,
-                                unfocusedContainerColor = sheetBg,
-                                focusedTextColor = textColor,
-                                unfocusedTextColor = textColor
-                            )
+                            shape = RoundedCornerShape(AppShape.button),
+                            colors = appTextFieldColors(isDarkMode)
                         )
                         OutlinedTextField(
                             value = target,
@@ -286,14 +284,8 @@ fun FundGoalEditorModal(
                             label = { Text("Target Amount (Rp)", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = GoldAccent,
-                                unfocusedBorderColor = sheetBorder,
-                                focusedContainerColor = sheetBg,
-                                unfocusedContainerColor = sheetBg,
-                                focusedTextColor = textColor,
-                                unfocusedTextColor = textColor
-                            )
+                            shape = RoundedCornerShape(AppShape.button),
+                            colors = appTextFieldColors(isDarkMode)
                         )
                         OutlinedTextField(
                             value = current,
@@ -301,14 +293,8 @@ fun FundGoalEditorModal(
                             label = { Text("Current Saved Amount (Rp)", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = GoldAccent,
-                                unfocusedBorderColor = sheetBorder,
-                                focusedContainerColor = sheetBg,
-                                unfocusedContainerColor = sheetBg,
-                                focusedTextColor = textColor,
-                                unfocusedTextColor = textColor
-                            )
+                            shape = RoundedCornerShape(AppShape.button),
+                            colors = appTextFieldColors(isDarkMode)
                         )
                     }
                     1 -> {
@@ -479,14 +465,8 @@ fun FundGoalEditorModal(
                             label = { Text("Image URL or Path", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = GoldAccent,
-                                unfocusedBorderColor = sheetBorder,
-                                focusedContainerColor = sheetBg,
-                                unfocusedContainerColor = sheetBg,
-                                focusedTextColor = textColor,
-                                unfocusedTextColor = textColor
-                            )
+                            shape = RoundedCornerShape(AppShape.button),
+                            colors = appTextFieldColors(isDarkMode)
                         )
 
                         Text("Sample Wallpapers", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 11.sp)
@@ -495,7 +475,7 @@ fun FundGoalEditorModal(
                                 Box(
                                     modifier = Modifier
                                         .size(48.dp)
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(AppShape.tick))
                                         .border(
                                             2.dp,
                                             if (bgUri == url) GoldAccent else Color.Transparent,
@@ -688,14 +668,14 @@ fun SettingsModal(
                         .fillMaxHeight()
                         .fillMaxWidth(0.85f)
                         .clickable(enabled = false) {}, // Prevent clicks from passing to background
-                    color = if (isDarkMode) Color(0xFF110F1A) else Color(0xFFFFFFFF),
-                    shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)
+                    color = if (isDarkMode) AppChrome.pageDark else AppChrome.pageLight,
+                    shape = RoundedCornerShape(topStart = AppShape.panel, bottomStart = AppShape.panel)
                 ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .statusBarsPadding()
-                    .padding(start = 24.dp, end = 24.dp, top = 4.dp, bottom = 24.dp)
+                    .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 20.dp)
             ) {
                 // Drawer Header
                 Row(
@@ -706,27 +686,27 @@ fun SettingsModal(
                     Text(
                         text = "Menu",
                         color = if (isDarkMode) Color.White else Color(0xFF121926),
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black
                     )
 
                     IconButton(
                         onClick = onDismiss,
                         modifier = Modifier
                             .size(40.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(AppShape.chip))
                             .background(if (isDarkMode) Color(0xFF231F33) else Color(0xFFE2E8F0))
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close Menu",
                             tint = if (isDarkMode) Color.White else Color(0xFF121926),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Scrollable Content
                 Column(
@@ -734,13 +714,13 @@ fun SettingsModal(
                         .weight(1f)
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // 1. Profile Card
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        color = if (isDarkMode) Color(0xFF1C1929) else Color(0xFFF4F5F9)
+                        shape = RoundedCornerShape(AppShape.panel),
+                        color = if (isDarkMode) AppChrome.rowDark else Color(0xFFF4F7FE)
                     ) {
                         Column(
                             modifier = Modifier
@@ -825,7 +805,7 @@ fun SettingsModal(
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(AppShape.panel),
                         color = Color.Transparent,
                         border = BorderStroke(1.dp, if (isDarkMode) Color(0xFF282436) else Color(0xFFE2E8F0))
                     ) {
@@ -868,8 +848,9 @@ fun SettingsModal(
                             exportLauncher.launch("buck-manager-backup.json")
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        color = if (isDarkMode) Color(0xFF1C1929) else Color(0xFFF4F5F9)
+                        shape = RoundedCornerShape(AppShape.card),
+                        color = if (isDarkMode) AppChrome.rowDark else Color(0xFFF4F7FE),
+                        border = BorderStroke(AppStroke.thin, if (isDarkMode) AppChrome.mutedDark else AppChrome.mutedLight)
                     ) {
                         Row(
                             modifier = Modifier
@@ -880,7 +861,7 @@ fun SettingsModal(
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
-                                    .clip(RoundedCornerShape(16.dp))
+                                    .clip(RoundedCornerShape(AppShape.chip))
                                     .background(GoldAccent.copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -912,8 +893,9 @@ fun SettingsModal(
                     Surface(
                         onClick = onRestorePurchases,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        color = if (isDarkMode) Color(0xFF1C1929) else Color(0xFFF4F5F9)
+                        shape = RoundedCornerShape(AppShape.card),
+                        color = if (isDarkMode) AppChrome.rowDark else Color(0xFFF4F7FE),
+                        border = BorderStroke(AppStroke.thin, if (isDarkMode) AppChrome.mutedDark else AppChrome.mutedLight)
                     ) {
                         Row(
                             modifier = Modifier
@@ -924,7 +906,7 @@ fun SettingsModal(
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
-                                    .clip(RoundedCornerShape(16.dp))
+                                    .clip(RoundedCornerShape(AppShape.chip))
                                     .background(Color(0xFF4ECB8D).copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -956,8 +938,8 @@ fun SettingsModal(
                     if (com.buckmanager.app.BuildConfig.DEBUG) {
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            color = if (isDarkMode) Color(0xFF1C1929) else Color(0xFFF4F5F9)
+                            shape = RoundedCornerShape(AppShape.card),
+                            color = if (isDarkMode) AppChrome.rowDark else Color(0xFFF4F7FE)
                         ) {
                             Row(
                                 modifier = Modifier
@@ -968,7 +950,7 @@ fun SettingsModal(
                                 Box(
                                     modifier = Modifier
                                         .size(40.dp)
-                                        .clip(RoundedCornerShape(16.dp))
+                                        .clip(RoundedCornerShape(AppShape.chip))
                                         .background(GoldAccent.copy(alpha = 0.15f)),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -1009,8 +991,9 @@ fun SettingsModal(
                     Surface(
                         onClick = onOpenCustomizeWidget,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        color = if (isDarkMode) Color(0xFF1C1929) else Color(0xFFF4F5F9)
+                        shape = RoundedCornerShape(AppShape.card),
+                        color = if (isDarkMode) AppChrome.rowDark else Color(0xFFF4F7FE),
+                        border = BorderStroke(AppStroke.thin, if (isDarkMode) AppChrome.mutedDark else AppChrome.mutedLight)
                     ) {
                         Row(
                             modifier = Modifier
@@ -1021,7 +1004,7 @@ fun SettingsModal(
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
-                                    .clip(RoundedCornerShape(16.dp))
+                                    .clip(RoundedCornerShape(AppShape.chip))
                                     .background(Color(0xFF3673FC).copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -1052,8 +1035,9 @@ fun SettingsModal(
 
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        color = if (isDarkMode) Color(0xFF1C1929) else Color(0xFFF4F5F9)
+                        shape = RoundedCornerShape(AppShape.card),
+                        color = if (isDarkMode) AppChrome.rowDark else Color(0xFFF4F7FE),
+                        border = BorderStroke(AppStroke.thin, if (isDarkMode) AppChrome.mutedDark else AppChrome.mutedLight)
                     ) {
                         Row(
                             modifier = Modifier
@@ -1064,7 +1048,7 @@ fun SettingsModal(
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
-                                    .clip(RoundedCornerShape(16.dp))
+                                    .clip(RoundedCornerShape(AppShape.chip))
                                     .background(Color(0xFF6C5CE7).copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -1107,8 +1091,8 @@ fun SettingsModal(
 
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        color = if (isDarkMode) Color(0xFF1C1929) else Color(0xFFF4F5F9)
+                        shape = RoundedCornerShape(AppShape.panel),
+                        color = if (isDarkMode) AppChrome.rowDark else Color(0xFFF4F7FE)
                     ) {
                         Column {
                             // Theme Row
@@ -1140,7 +1124,7 @@ fun SettingsModal(
 
                                     if (isThemeCustomized) {
                                         Surface(
-                                            shape = RoundedCornerShape(16.dp),
+                                            shape = RoundedCornerShape(AppShape.card),
                                             color = if (isDarkMode) Color(0xFF282436) else Color(0xFFE2E8F0),
                                             border = BorderStroke(1.dp, if (isDarkMode) Color(0xFF38334A) else Color(0xFFCBD5E1))
                                         ) {
@@ -1168,13 +1152,13 @@ fun SettingsModal(
                                     } else {
                                         Row(
                                             modifier = Modifier
-                                                .clip(RoundedCornerShape(16.dp))
+                                                .clip(RoundedCornerShape(AppShape.chip))
                                                 .background(if (isDarkMode) Color(0xFF282436) else Color(0xFFE2E8F0))
                                                 .padding(4.dp),
                                             horizontalArrangement = Arrangement.spacedBy(2.dp)
                                         ) {
                                             Surface(
-                                                shape = RoundedCornerShape(8.dp),
+                                                shape = RoundedCornerShape(AppShape.tick),
                                                 color = if (isDarkMode) GoldAccent else Color.Transparent,
                                                 modifier = Modifier.clickable { onToggleTheme(true) }
                                             ) {
@@ -1187,7 +1171,7 @@ fun SettingsModal(
                                                 )
                                             }
                                             Surface(
-                                                shape = RoundedCornerShape(8.dp),
+                                                shape = RoundedCornerShape(AppShape.tick),
                                                 color = if (!isDarkMode) GoldAccent else Color.Transparent,
                                                 modifier = Modifier.clickable { onToggleTheme(false) }
                                             ) {
@@ -1319,14 +1303,14 @@ fun GoalDepositModal(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(AppShape.chip))
                         .background(if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF1F5F9))
                         .padding(4.dp)
                 ) {
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(AppShape.tick))
                             .background(if (!isWithdraw) GoldAccent else Color.Transparent)
                             .clickable { isWithdraw = false }
                             .padding(vertical = 8.dp),
@@ -1343,7 +1327,7 @@ fun GoalDepositModal(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(AppShape.tick))
                             .background(if (isWithdraw) Color(0xFFFB7185) else Color.Transparent)
                             .clickable { isWithdraw = true }
                             .padding(vertical = 8.dp),
@@ -1365,12 +1349,8 @@ fun GoalDepositModal(
                     placeholder = { Text("Contoh: 100000", color = dialogSubtitleColor.copy(alpha = 0.5f)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = dialogTitleColor,
-                        unfocusedTextColor = dialogTitleColor,
-                        focusedBorderColor = GoldAccent,
-                        unfocusedBorderColor = dialogBorderColor
-                    )
+                    shape = RoundedCornerShape(AppShape.button),
+                    colors = appTextFieldColors(isDarkMode)
                 )
 
                 Text("Pilihan Cepat:", color = dialogSubtitleColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -1378,7 +1358,7 @@ fun GoalDepositModal(
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(presets) { preset ->
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
+                            shape = RoundedCornerShape(AppShape.tick),
                             color = if (isDarkMode) Color(0xFF282436) else Color(0xFFE2E8F0),
                             border = BorderStroke(1.dp, if (isDarkMode) Color(0xFF38334A) else Color(0xFFCBD5E1)),
                             modifier = Modifier.clickable { amountText = preset.toLong().toString() }
@@ -1632,7 +1612,7 @@ fun WidgetCustomizerModal(
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(32.dp)
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(AppShape.tick))
                                         .background(parseHexColor(currentBtnBgColor, GoldAccent)),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -1641,7 +1621,7 @@ fun WidgetCustomizerModal(
                                 Box(
                                     modifier = Modifier
                                         .height(32.dp)
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(AppShape.tick))
                                         .background(parseHexColor(currentBtnBgColor, GoldAccent))
                                         .padding(horizontal = 8.dp),
                                     contentAlignment = Alignment.Center
@@ -1651,7 +1631,7 @@ fun WidgetCustomizerModal(
                                 Box(
                                     modifier = Modifier
                                         .height(32.dp)
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(AppShape.tick))
                                         .background(parseHexColor(currentBtnBgColor, GoldAccent))
                                         .padding(horizontal = 8.dp),
                                     contentAlignment = Alignment.Center
@@ -1831,10 +1811,8 @@ fun WidgetCustomizerModal(
                             label = { Text("Image URL or Path") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = GoldAccent,
-                                unfocusedBorderColor = if (isDarkMode) Color(0xFF2A273C) else Color(0xFFCBD5E1)
-                            )
+                            shape = RoundedCornerShape(AppShape.button),
+                            colors = appTextFieldColors(isDarkMode)
                         )
 
                         Text("Sample Wallpapers", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A), fontSize = 11.sp)
@@ -1843,7 +1821,7 @@ fun WidgetCustomizerModal(
                                 Box(
                                     modifier = Modifier
                                         .size(48.dp)
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(AppShape.tick))
                                         .border(2.dp, if (currentBgImageUri == url) GoldAccent else Color.Transparent, RoundedCornerShape(8.dp))
                                         .clickable { currentBgImageUri = url }
                                 ) {
@@ -1887,7 +1865,7 @@ fun WidgetCustomizerModal(
                         GoalAppWidgetProvider.pinWidgetToHomeScreen(context)
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(AppShape.card),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = GoldAccent)
                 ) {
                     Icon(Icons.Default.Widgets, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -1926,7 +1904,7 @@ fun WidgetCustomizerModal(
                         onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(AppShape.card),
                     colors = ButtonDefaults.buttonColors(containerColor = GoldAccent)
                 ) {
                     Text("SIMPAN KOSTUMISASI WIDGET", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp)

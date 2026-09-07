@@ -31,9 +31,11 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.buckmanager.app.model.Envelope
 import com.buckmanager.app.model.formatRp
+import com.buckmanager.app.ui.AppShape
 import com.buckmanager.app.ui.AppSpacing
-import com.buckmanager.app.utils.customCardStyle
 import com.buckmanager.app.ui.GoldAccent
+import com.buckmanager.app.ui.appTextFieldColors
+import com.buckmanager.app.utils.customCardStyle
 import com.buckmanager.app.ui.components.GoalDepositModal
 import com.buckmanager.app.ui.components.PremiumModal
 import com.buckmanager.app.model.MonetizationState
@@ -415,7 +417,7 @@ fun DashboardScreen(
                     Surface(
                         onClick = { showTransactionBottomSheet = true },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(AppShape.card),
                         color = if (isDarkMode) Color(0xFF1C1929) else Color.White,
                         border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.45f))
                     ) {
@@ -603,7 +605,7 @@ fun DashboardScreen(
                                     onClick = { onEditFundGoal() },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.buttonColors(containerColor = parseHexColor(fundGoal.btnBgColorHex, labelColor)),
-                                    shape = RoundedCornerShape(12.dp)
+                                    shape = RoundedCornerShape(AppShape.button)
                                 ) {
                                     Text("Set a goal", color = parseHexColor(fundGoal.btnTextColorHex, Color.White), fontWeight = FontWeight.Bold)
                                 }
@@ -653,7 +655,7 @@ fun DashboardScreen(
                                 ) {
                                     Surface(
                                         onClick = { showGoalDepositModal = true },
-                                        shape = RoundedCornerShape(12.dp),
+                                        shape = RoundedCornerShape(AppShape.button),
                                         color = parseHexColor(fundGoal.btnBgColorHex, labelColor)
                                     ) {
                                         Text(
@@ -886,7 +888,7 @@ fun DashboardScreen(
                 .padding(end = 20.dp, bottom = 16.dp),
             containerColor = Color(0xFFFCBF36),
             contentColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(AppShape.button)
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add Transaction")
         }
@@ -971,7 +973,7 @@ fun TransactionBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp, bottom = 48.dp, top = 8.dp),
+                .padding(start = 20.dp, end = 20.dp, bottom = 32.dp, top = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text("Record Transaction", color = textPrimary, fontWeight = FontWeight.Black, fontSize = 20.sp)
@@ -983,14 +985,14 @@ fun TransactionBottomSheet(
                 contentColor = textPrimary,
                 indicator = { },
                 divider = { },
-                modifier = Modifier.clip(RoundedCornerShape(AppSpacing.base))
+                modifier = Modifier.clip(RoundedCornerShape(AppShape.button))
             ) {
                 Tab(
                     selected = type == "expense",
                     onClick = { type = "expense" },
                     modifier = Modifier
                         .padding(AppSpacing.micro)
-                        .clip(RoundedCornerShape(AppSpacing.base))
+                        .clip(RoundedCornerShape(AppShape.button))
                         .background(if (type == "expense") expenseActiveBg else Color.Transparent)
                 ) {
                     Text(
@@ -1005,7 +1007,7 @@ fun TransactionBottomSheet(
                     onClick = { type = "income" },
                     modifier = Modifier
                         .padding(AppSpacing.micro)
-                        .clip(RoundedCornerShape(AppSpacing.base))
+                        .clip(RoundedCornerShape(AppShape.button))
                         .background(if (type == "income") incomeActiveBg else Color.Transparent)
                 ) {
                     Text(
@@ -1026,15 +1028,8 @@ fun TransactionBottomSheet(
                     placeholder = { Text("0", color = textSecondary) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(AppSpacing.base),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = innerBoxBg,
-                        unfocusedContainerColor = innerBoxBg,
-                        focusedTextColor = textPrimary,
-                        unfocusedTextColor = textPrimary,
-                        focusedBorderColor = GoldAccent,
-                        unfocusedBorderColor = inputBorder
-                    )
+                    shape = RoundedCornerShape(AppShape.button),
+                    colors = appTextFieldColors(isDarkMode)
                 )
             }
 
@@ -1087,15 +1082,8 @@ fun TransactionBottomSheet(
                     onValueChange = { descriptionText = it },
                     placeholder = { Text("Lunch, Coffee, Salary...", color = textSecondary) },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(AppSpacing.base),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = innerBoxBg,
-                        unfocusedContainerColor = innerBoxBg,
-                        focusedTextColor = textPrimary,
-                        unfocusedTextColor = textPrimary,
-                        focusedBorderColor = GoldAccent,
-                        unfocusedBorderColor = inputBorder
-                    )
+                    shape = RoundedCornerShape(AppShape.button),
+                    colors = appTextFieldColors(isDarkMode)
                 )
             }
 
@@ -1115,7 +1103,7 @@ fun TransactionBottomSheet(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (type == "expense") expenseColor else incomeColor
                 ),
-                shape = RoundedCornerShape(AppSpacing.standard)
+                shape = RoundedCornerShape(AppShape.button)
             ) {
                 Text(
                     "Record Transaction",

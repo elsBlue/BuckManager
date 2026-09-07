@@ -143,7 +143,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .navigationBarsPadding()
-                                .padding(bottom = 16.dp, start = 24.dp, end = 24.dp),
+                                .padding(bottom = 16.dp, start = 20.dp, end = 20.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             val navBg = if (isDarkMode) Color(0xCC0F1117) else Color(0xCCFFFFFF)
@@ -155,11 +155,11 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                                 modifier = Modifier
                                     .height(58.dp)
                                     .border(
-                                        1.dp,
+                                        AppStroke.thin,
                                         navBorder,
-                                        RoundedCornerShape(16.dp)
+                                        RoundedCornerShape(AppShape.panel)
                                     ),
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(AppShape.panel),
                                 color = navBg,
                                 tonalElevation = 0.dp,
                                 shadowElevation = 0.dp
@@ -404,13 +404,13 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                 val bannerBg = if (isDarkMode) Color(0xF0181C26) else Color(0xF00F172A)
                 Surface(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(AppShape.panel))
                         .border(
-                            1.dp,
+                            AppStroke.thin,
                             androidx.compose.ui.graphics.Brush.horizontalGradient(
                                 listOf(Color(0xFF10B981), GoldAccent, Color(0xFF10B981))
                             ),
-                            RoundedCornerShape(24.dp)
+                            RoundedCornerShape(AppShape.panel)
                         )
                         .clickable { isNoticeVisible = false },
                     color = bannerBg,
@@ -425,7 +425,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(AppShape.chip))
                                 .background(Color(0xFF10B981).copy(alpha = 0.2f)),
                             contentAlignment = Alignment.Center
                         ) {

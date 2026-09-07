@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.buckmanager.app.model.MonetizationState
 import com.buckmanager.app.model.formatRp
+import com.buckmanager.app.ui.AppShape
 
 @Composable
 fun PremiumModal(
@@ -90,7 +91,7 @@ fun PremiumModal(
                         onClick = onPurchase,
                         modifier = Modifier.fillMaxWidth().height(48.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = goldColor),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(AppShape.button)
                     ) {
                         Text(
                             "Buy Lifetime Premium · ${purchasePriceLabel ?: formatRp(15000.0)}",

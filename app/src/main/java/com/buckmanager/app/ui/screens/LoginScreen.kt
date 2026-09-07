@@ -25,6 +25,9 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
+import com.buckmanager.app.ui.AppChrome
+import com.buckmanager.app.ui.AppShape
+import com.buckmanager.app.ui.AppStroke
 import com.buckmanager.app.ui.GoldAccent
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -83,7 +86,7 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val bgColor = if (isDarkMode) Color(0xFF0D0C14) else Color(0xFFF8FAFC)
+    val bgColor = if (isDarkMode) AppChrome.pageDark else AppChrome.pageLight
     val titleColor = if (isDarkMode) Color.White else Color(0xFF0F172A)
     val subtitleColor = if (isDarkMode) Color(0xFF8B92A5) else Color(0xFF64748B)
     val btnBgColor = if (isDarkMode) Color(0xFF1E1B2E) else Color.White
@@ -99,7 +102,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -107,7 +110,7 @@ fun LoginScreen(
 
             Surface(
                 modifier = Modifier.size(144.dp),
-                shape = RoundedCornerShape(32.dp),
+                shape = RoundedCornerShape(AppShape.hero),
                 color = GoldAccent,
                 shadowElevation = 16.dp
             ) {
@@ -240,9 +243,10 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(AppShape.button),
                 color = btnBgColor,
-                shadowElevation = 4.dp
+                border = androidx.compose.foundation.BorderStroke(AppStroke.thin, if (isDarkMode) AppChrome.mutedDark else AppChrome.mutedLight),
+                shadowElevation = 0.dp
             ) {
                 Row(
                     modifier = Modifier.fillMaxSize(),

@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.buckmanager.app.model.CurrencyConfig
+import com.buckmanager.app.ui.AppShape
 
 @Composable
 fun CurrencyModal(
@@ -75,7 +76,7 @@ private fun CurrencyOption(title: String, symbol: String, isSelected: Boolean, i
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(AppShape.card))
             .background(if (isSelected) Color(0xFFD4A54A).copy(alpha = 0.2f) else Color.Transparent)
             .clickable { onClick() }
             .padding(16.dp),

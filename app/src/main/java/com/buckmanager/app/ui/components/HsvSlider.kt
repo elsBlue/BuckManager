@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.buckmanager.app.ui.AppShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +49,7 @@ fun HsvSlider(
             modifier = Modifier
                 .weight(1f)
                 .height(24.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(AppShape.chip))
                 .background(baseColor)
                 .background(backgroundBrush),
             contentAlignment = Alignment.Center

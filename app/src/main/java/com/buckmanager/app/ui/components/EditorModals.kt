@@ -52,7 +52,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.buckmanager.app.model.*
+import com.buckmanager.app.ui.AppShape
+import com.buckmanager.app.ui.AppStroke
 import com.buckmanager.app.ui.GoldAccent
+import com.buckmanager.app.ui.appTextFieldColors
 
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -542,10 +545,10 @@ fun AccordionSection(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(AppShape.card))
             .clickable { onToggle() },
         color = bg,
-        border = BorderStroke(1.dp, border)
+        border = BorderStroke(AppStroke.thin, border)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
@@ -803,7 +806,7 @@ fun BackgroundEditorModal(
                                 },
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = GoldAccent),
                                 border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.5f)),
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(AppShape.button),
                                 modifier = Modifier.weight(1f).height(48.dp)
                             ) {
                                 Icon(Icons.Default.Image, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -816,7 +819,7 @@ fun BackgroundEditorModal(
                                     onClick = { croppingImageUri = bgUri },
                                     colors = ButtonDefaults.outlinedButtonColors(contentColor = textColor),
                                     border = BorderStroke(1.dp, sheetBorder),
-                                    shape = RoundedCornerShape(16.dp),
+                                    shape = RoundedCornerShape(AppShape.button),
                                     modifier = Modifier.height(48.dp)
                                 ) {
                                     Icon(Icons.Default.Crop, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -828,7 +831,7 @@ fun BackgroundEditorModal(
                                     onClick = { bgUri = "" },
                                     modifier = Modifier
                                         .size(48.dp)
-                                        .clip(RoundedCornerShape(16.dp))
+                                        .clip(RoundedCornerShape(AppShape.chip))
                                         .background(Color(0xFFFB7185).copy(alpha = 0.1f)),
                                     colors = IconButtonDefaults.iconButtonColors(contentColor = Color(0xFFFB7185))
                                 ) {
@@ -843,15 +846,8 @@ fun BackgroundEditorModal(
                             label = { Text("Image URL or Path", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = GoldAccent,
-                                unfocusedBorderColor = if (isDarkMode) Color(0xFF2A273C) else Color(0xFFCBD5E1),
-                                focusedContainerColor = if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF1F5F9),
-                                unfocusedContainerColor = if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF1F5F9),
-                                focusedTextColor = if (isDarkMode) Color.White else Color(0xFF0F172A),
-                                unfocusedTextColor = if (isDarkMode) Color.White else Color(0xFF0F172A)
-                            )
+                            shape = RoundedCornerShape(AppShape.button),
+                            colors = appTextFieldColors(isDarkMode)
                         )
 
                         Text("Curated Background Wallpapers", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 13.sp, fontWeight = FontWeight.Medium)
@@ -860,7 +856,7 @@ fun BackgroundEditorModal(
                                 Box(
                                     modifier = Modifier
                                         .size(64.dp)
-                                        .clip(RoundedCornerShape(16.dp))
+                                        .clip(RoundedCornerShape(AppShape.chip))
                                         .border(
                                             2.dp,
                                             if (bgUri == url) GoldAccent else Color.Transparent,
@@ -939,7 +935,7 @@ fun BackgroundEditorModal(
                         dimOpacity = 30f
                     },
                     modifier = Modifier.weight(1f).height(48.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(AppShape.button),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)),
                     border = BorderStroke(1.dp, sheetBorder)
                 ) {
@@ -963,7 +959,7 @@ fun BackgroundEditorModal(
                         onDismiss()
                     },
                     modifier = Modifier.weight(1f).height(48.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(AppShape.button),
                     colors = ButtonDefaults.buttonColors(containerColor = GoldAccent)
                 ) {
                     Text("APPLY CANVAS THEME", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
@@ -1285,14 +1281,7 @@ fun HeaderCardEditorModal(
                             label = { Text("Image link", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = GoldAccent,
-                                unfocusedBorderColor = if (isDarkMode) Color(0xFF2A273C) else Color(0xFFCBD5E1),
-                                focusedContainerColor = if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF1F5F9),
-                                unfocusedContainerColor = if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF1F5F9),
-                                focusedTextColor = if (isDarkMode) Color.White else Color(0xFF0F172A),
-                                unfocusedTextColor = if (isDarkMode) Color.White else Color(0xFF0F172A)
-                            )
+                            colors = appTextFieldColors(isDarkMode)
                         )
                     }
 
@@ -1625,10 +1614,8 @@ fun EnvelopeEditorModal(
                         onValueChange = { name = it },
                         label = { Text("Envelope Name") },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = textColor,
-                            unfocusedTextColor = textColor
-                        )
+                        shape = RoundedCornerShape(AppShape.button),
+                        colors = appTextFieldColors(isDarkMode)
                     )
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Select Icon", color = textColor, fontSize = 13.sp, fontWeight = FontWeight.Bold)
@@ -1682,7 +1669,7 @@ fun EnvelopeEditorModal(
                     if (!hasPremium) {
                         Surface(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(AppShape.button),
                             color = if (isDarkMode) Color(0xFF181C26) else Color(0xFFF1F5F9),
                             border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f))
                         ) {
@@ -1816,14 +1803,8 @@ fun EnvelopeEditorModal(
                             label = { Text("Image URL or Path", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = GoldAccent,
-                                unfocusedBorderColor = sheetBorder,
-                                focusedContainerColor = sheetBg,
-                                unfocusedContainerColor = sheetBg,
-                                focusedTextColor = textColor,
-                                unfocusedTextColor = textColor
-                            )
+                            shape = RoundedCornerShape(AppShape.button),
+                            colors = appTextFieldColors(isDarkMode)
                         )
 
                         Text("Sample Wallpapers", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 11.sp)
@@ -1917,7 +1898,7 @@ fun EnvelopeEditorModal(
                     OutlinedButton(
                         onClick = { onDelete(envelope.id); onDismiss() },
                         modifier = Modifier.weight(1f).height(48.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(AppShape.button),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
                         border = BorderStroke(1.dp, Color.Red)
                     ) {
@@ -1958,7 +1939,7 @@ fun EnvelopeEditorModal(
                         onDismiss()
                     },
                     modifier = Modifier.weight(1f).height(48.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(AppShape.button),
                     colors = ButtonDefaults.buttonColors(containerColor = GoldAccent)
                 ) {
                     Text("Save", color = Color.White, fontWeight = FontWeight.Bold)
@@ -2050,7 +2031,7 @@ fun AddEnvelopeModal(
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 16.dp)
                     .height(80.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(AppShape.button),
                 color = parseHexColor(bgHex, sheetBg),
                 border = BorderStroke(1.dp, parseHexColor(colorHex, Color.Gray))
             ) {
@@ -2096,10 +2077,8 @@ fun AddEnvelopeModal(
                         onValueChange = { name = it },
                         label = { Text("Envelope Name") },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = textColor,
-                            unfocusedTextColor = textColor
-                        )
+                        shape = RoundedCornerShape(AppShape.button),
+                        colors = appTextFieldColors(isDarkMode)
                     )
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Select Icon", color = textColor, fontSize = 13.sp, fontWeight = FontWeight.Bold)
@@ -2147,7 +2126,7 @@ fun AddEnvelopeModal(
                     if (!hasPremium) {
                         Surface(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(AppShape.button),
                             color = if (isDarkMode) Color(0xFF181C26) else Color(0xFFF1F5F9),
                             border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f))
                         ) {
@@ -2294,7 +2273,7 @@ fun AddEnvelopeModal(
                         onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth().height(48.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(AppShape.button),
                     colors = ButtonDefaults.buttonColors(containerColor = GoldAccent)
                 ) {
                     Text("Add envelope", color = Color.White, fontWeight = FontWeight.Bold)
