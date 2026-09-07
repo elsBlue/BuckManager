@@ -3,13 +3,13 @@ package com.buckmanager.app.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,16 +61,17 @@ fun GlassBottomNav(
     }
     val stroke = if (darkSurface) Color.White.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.7f)
 
-    Box(
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(78.dp),
-        contentAlignment = Alignment.BottomCenter
+            .height(58.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(58.dp)
+                .weight(1f)
+                .fillMaxHeight()
                 .shadow(12.dp, shape, ambientColor = Color.Black.copy(alpha = 0.18f), spotColor = Color.Black.copy(alpha = 0.18f))
                 .clip(shape)
                 .background(frost)
@@ -100,7 +101,6 @@ fun GlassBottomNav(
                     onClick = onTransactions,
                     modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.weight(1f))
                 NavIcon(
                     selected = false,
                     selectedIcon = Icons.Default.Menu,
@@ -116,38 +116,24 @@ fun GlassBottomNav(
 
         Box(
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-                .height(56.dp),
-            contentAlignment = Alignment.TopCenter
+                .size(58.dp)
+                .shadow(
+                    10.dp,
+                    CircleShape,
+                    ambientColor = Color(0xFFFCBF36).copy(alpha = 0.35f),
+                    spotColor = Color(0xFFFCBF36).copy(alpha = 0.4f)
+                )
+                .clip(CircleShape)
+                .background(Color(0xFFFCBF36))
+                .clickable(onClick = onAdd),
+            contentAlignment = Alignment.Center
         ) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-                Spacer(modifier = Modifier.weight(2f))
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .offset(y = 2.dp),
-                    contentAlignment = Alignment.TopCenter
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(52.dp)
-                            .shadow(10.dp, CircleShape, ambientColor = Color(0xFFFCBF36).copy(alpha = 0.35f), spotColor = Color(0xFFFCBF36).copy(alpha = 0.4f))
-                            .clip(CircleShape)
-                            .background(Color(0xFFFCBF36))
-                            .clickable(onClick = onAdd),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add transaction",
-                            tint = Color.White,
-                            modifier = Modifier.size(26.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.weight(1f))
-            }
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add transaction",
+                tint = Color.White,
+                modifier = Modifier.size(26.dp)
+            )
         }
     }
 }
@@ -179,7 +165,7 @@ private fun NavIcon(
     val tint = if (selected) activeTint else idleTint
     Box(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxHeight()
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
