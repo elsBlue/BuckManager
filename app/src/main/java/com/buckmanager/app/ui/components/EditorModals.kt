@@ -1994,9 +1994,9 @@ fun AddEnvelopeModal(
     var percentage by remember { mutableFloatStateOf(10f) }
     var colorHex by remember { mutableStateOf("#3B82F6") }
     var iconName by remember { mutableStateOf("folder") }
-    var bgHex by remember { mutableStateOf(if (isDarkMode) "#181C26" else "#F1F5F9") }
+    var bgHex by remember { mutableStateOf(if (isDarkMode) "#181C26" else "#FFFFFF") }
     var valueColorHex by remember { mutableStateOf(if (isDarkMode) "#FFFFFF" else "#0F172A") }
-    var selectedElevation by remember { mutableIntStateOf(2) }
+    var selectedElevation by remember { mutableIntStateOf(0) }
     
     var radiusTopLeft by remember { mutableIntStateOf(24) }
     var radiusTopRight by remember { mutableIntStateOf(24) }
@@ -2014,7 +2014,7 @@ fun AddEnvelopeModal(
     var gradientAngle by remember { mutableFloatStateOf(0f) }
     var gradColor1 by remember { mutableStateOf(bgHex) }
     var gradColor2 by remember { mutableStateOf(bgHex) }
-    var borderColorHex by remember { mutableStateOf("#CBD5E1") }
+    var borderColorHex by remember { mutableStateOf(if (isDarkMode) "#2A273C" else "#E2E8F0") }
 
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Envelope", "Look", "Shape")

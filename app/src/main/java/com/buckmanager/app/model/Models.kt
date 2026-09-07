@@ -9,7 +9,7 @@ data class Envelope(
     val percentage: Int,
     val colorHex: String,
     val iconName: String = "folder",
-    val backgroundColorHex: String = "#EFF6FF",
+    val backgroundColorHex: String = "#FFFFFF",
     val backgroundImageUri: String? = null,
     val dimOpacity: Int = 30,
     val orderIndex: Int = 0,
@@ -24,7 +24,7 @@ data class Envelope(
     val borderRight: Int = 1,
     val borderBottom: Int = 1,
     val borderLeft: Int = 1,
-    val borderColorHex: String = "#CBD5E1",
+    val borderColorHex: String = "#E2E8F0",
     val paddingTop: Int = 21,
     val paddingRight: Int = 21,
     val paddingBottom: Int = 21,
@@ -32,7 +32,7 @@ data class Envelope(
     val useGradient: Boolean = false,
     val gradientColors: List<String> = emptyList(),
     val gradientAngle: Float = 0f,
-    val elevation: Int = 2
+    val elevation: Int = 0
 )
 
 @Serializable

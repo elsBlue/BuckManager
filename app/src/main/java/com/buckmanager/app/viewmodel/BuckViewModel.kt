@@ -166,18 +166,52 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun defaultEnvelopes(): List<Envelope> = defaultEnvelopesLight()
 
+    private fun liftLegacyEnvelopeFills(list: List<Envelope>): List<Envelope> {
+        val lightFills = setOf("#EBF0FF", "#FFF8E7", "#EFF6FF", "#FFF6E0", "#F1F5F9")
+        val darkFills = setOf("#152040", "#2A2010", "#102838", "#282010", "#1A1E30")
+        var changed = false
+        val lifted = list.map { env ->
+            val hex = env.backgroundColorHex.uppercase()
+            when {
+                hex in lightFills -> {
+                    changed = true
+                    env.copy(
+                        backgroundColorHex = "#FFFFFF",
+                        borderColorHex = if (env.borderColorHex.equals("#CBD5E1", true)) "#E2E8F0" else env.borderColorHex,
+                        elevation = 0
+                    )
+                }
+                hex in darkFills -> {
+                    changed = true
+                    env.copy(
+                        backgroundColorHex = "#181C26",
+                        borderColorHex = if (env.borderColorHex.equals("#CBD5E1", true)) "#2A273C" else env.borderColorHex,
+                        elevation = 0
+                    )
+                }
+                else -> env
+            }
+        }
+        if (changed) {
+            viewModelScope.launch(Dispatchers.IO) {
+                saveSetting("envelopes_config", json.encodeToString(lifted))
+            }
+        }
+        return if (changed) lifted else list
+    }
+
     private fun defaultEnvelopesDark(): List<Envelope> = listOf(
-        Envelope(id = "main", name = "Main Envelope", percentage = 0, colorHex = "#3673FC", iconName = "wallet", backgroundColorHex = "#152040", orderIndex = 0, labelColorHex = "#3673FC", valueColorHex = "#FFFFFF", descriptionColorHex = "#6B7280"),
-        Envelope(id = "needs", name = "Needs", percentage = 50, colorHex = "#FCBF36", iconName = "home", backgroundColorHex = "#2A2010", orderIndex = 1, labelColorHex = "#FCBF36", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF"),
-        Envelope(id = "wants", name = "Wants", percentage = 30, colorHex = "#38BDF8", iconName = "game-controller", backgroundColorHex = "#102838", orderIndex = 2, labelColorHex = "#38BDF8", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF"),
-        Envelope(id = "savings", name = "Savings", percentage = 20, colorHex = "#F5B041", iconName = "chart", backgroundColorHex = "#282010", orderIndex = 3, labelColorHex = "#F5B041", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF")
+        Envelope(id = "main", name = "Main Envelope", percentage = 0, colorHex = "#3673FC", iconName = "wallet", backgroundColorHex = "#181C26", orderIndex = 0, labelColorHex = "#3673FC", valueColorHex = "#FFFFFF", descriptionColorHex = "#6B7280", borderColorHex = "#2A273C", elevation = 0),
+        Envelope(id = "needs", name = "Needs", percentage = 50, colorHex = "#FCBF36", iconName = "home", backgroundColorHex = "#181C26", orderIndex = 1, labelColorHex = "#FCBF36", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF", borderColorHex = "#2A273C", elevation = 0),
+        Envelope(id = "wants", name = "Wants", percentage = 30, colorHex = "#38BDF8", iconName = "game-controller", backgroundColorHex = "#181C26", orderIndex = 2, labelColorHex = "#38BDF8", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF", borderColorHex = "#2A273C", elevation = 0),
+        Envelope(id = "savings", name = "Savings", percentage = 20, colorHex = "#F5B041", iconName = "chart", backgroundColorHex = "#181C26", orderIndex = 3, labelColorHex = "#F5B041", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF", borderColorHex = "#2A273C", elevation = 0)
     )
 
     private fun defaultEnvelopesLight(): List<Envelope> = listOf(
-        Envelope(id = "main", name = "Main Envelope", percentage = 0, colorHex = "#3673FC", iconName = "wallet", backgroundColorHex = "#EBF0FF", orderIndex = 0, labelColorHex = "#2856C8", valueColorHex = "#0F172A", descriptionColorHex = "#94A3B8"),
-        Envelope(id = "needs", name = "Needs", percentage = 50, colorHex = "#D4950A", iconName = "home", backgroundColorHex = "#FFF8E7", orderIndex = 1, labelColorHex = "#B8860B", valueColorHex = "#0F172A", descriptionColorHex = "#64748B"),
-        Envelope(id = "wants", name = "Wants", percentage = 30, colorHex = "#2563EB", iconName = "game-controller", backgroundColorHex = "#EFF6FF", orderIndex = 2, labelColorHex = "#1D6DB8", valueColorHex = "#0F172A", descriptionColorHex = "#64748B"),
-        Envelope(id = "savings", name = "Savings", percentage = 20, colorHex = "#A67B00", iconName = "chart", backgroundColorHex = "#FFF6E0", orderIndex = 3, labelColorHex = "#A67B00", valueColorHex = "#0F172A", descriptionColorHex = "#64748B")
+        Envelope(id = "main", name = "Main Envelope", percentage = 0, colorHex = "#3673FC", iconName = "wallet", backgroundColorHex = "#FFFFFF", orderIndex = 0, labelColorHex = "#2856C8", valueColorHex = "#0F172A", descriptionColorHex = "#94A3B8", borderColorHex = "#E2E8F0", elevation = 0),
+        Envelope(id = "needs", name = "Needs", percentage = 50, colorHex = "#D4950A", iconName = "home", backgroundColorHex = "#FFFFFF", orderIndex = 1, labelColorHex = "#B8860B", valueColorHex = "#0F172A", descriptionColorHex = "#64748B", borderColorHex = "#E2E8F0", elevation = 0),
+        Envelope(id = "wants", name = "Wants", percentage = 30, colorHex = "#2563EB", iconName = "game-controller", backgroundColorHex = "#FFFFFF", orderIndex = 2, labelColorHex = "#1D6DB8", valueColorHex = "#0F172A", descriptionColorHex = "#64748B", borderColorHex = "#E2E8F0", elevation = 0),
+        Envelope(id = "savings", name = "Savings", percentage = 20, colorHex = "#A67B00", iconName = "chart", backgroundColorHex = "#FFFFFF", orderIndex = 3, labelColorHex = "#A67B00", valueColorHex = "#0F172A", descriptionColorHex = "#64748B", borderColorHex = "#E2E8F0", elevation = 0)
     )
 
     fun loadAllData() {
@@ -196,7 +230,7 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
             settings["envelopes_config"]?.let { envStr ->
                 try {
                     val parsed = json.decodeFromString<List<Envelope>>(envStr)
-                    _envelopes.value = parsed.sortedBy { it.orderIndex }
+                    _envelopes.value = liftLegacyEnvelopeFills(parsed.sortedBy { it.orderIndex })
                 } catch (e: Exception) {
                     _envelopes.value = defaultEnvelopes()
                 }
@@ -407,11 +441,11 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
             
             val envs = _envelopes.value.map { env ->
                 when(env.id) {
-                    "main" -> env.copy(colorHex = "#3673FC", backgroundColorHex = "#152040", labelColorHex = "#3673FC", valueColorHex = "#FFFFFF", descriptionColorHex = "#6B7280")
-                    "needs" -> env.copy(colorHex = "#FCBF36", backgroundColorHex = "#2A2010", labelColorHex = "#FCBF36", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF")
-                    "wants" -> env.copy(colorHex = "#38BDF8", backgroundColorHex = "#102838", labelColorHex = "#38BDF8", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF")
-                    "savings" -> env.copy(colorHex = "#F5B041", backgroundColorHex = "#282010", labelColorHex = "#F5B041", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF")
-                    else -> env
+                    "main" -> env.copy(colorHex = "#3673FC", backgroundColorHex = "#181C26", labelColorHex = "#3673FC", valueColorHex = "#FFFFFF", descriptionColorHex = "#6B7280", borderColorHex = "#2A273C", elevation = 0)
+                    "needs" -> env.copy(colorHex = "#FCBF36", backgroundColorHex = "#181C26", labelColorHex = "#FCBF36", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF", borderColorHex = "#2A273C", elevation = 0)
+                    "wants" -> env.copy(colorHex = "#38BDF8", backgroundColorHex = "#181C26", labelColorHex = "#38BDF8", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF", borderColorHex = "#2A273C", elevation = 0)
+                    "savings" -> env.copy(colorHex = "#F5B041", backgroundColorHex = "#181C26", labelColorHex = "#F5B041", valueColorHex = "#FFFFFF", descriptionColorHex = "#9CA3AF", borderColorHex = "#2A273C", elevation = 0)
+                    else -> env.copy(backgroundColorHex = "#181C26", borderColorHex = "#2A273C", elevation = 0)
                 }
             }
 
@@ -435,11 +469,11 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
             
             val envs = _envelopes.value.map { env ->
                 when(env.id) {
-                    "main" -> env.copy(colorHex = "#3673FC", backgroundColorHex = "#EBF0FF", labelColorHex = "#2856C8", valueColorHex = "#0F172A", descriptionColorHex = "#94A3B8")
-                    "needs" -> env.copy(colorHex = "#D4950A", backgroundColorHex = "#FFF8E7", labelColorHex = "#B8860B", valueColorHex = "#0F172A", descriptionColorHex = "#64748B")
-                    "wants" -> env.copy(colorHex = "#2563EB", backgroundColorHex = "#EFF6FF", labelColorHex = "#1D6DB8", valueColorHex = "#0F172A", descriptionColorHex = "#64748B")
-                    "savings" -> env.copy(colorHex = "#A67B00", backgroundColorHex = "#FFF6E0", labelColorHex = "#A67B00", valueColorHex = "#0F172A", descriptionColorHex = "#64748B")
-                    else -> env
+                    "main" -> env.copy(colorHex = "#3673FC", backgroundColorHex = "#FFFFFF", labelColorHex = "#2856C8", valueColorHex = "#0F172A", descriptionColorHex = "#94A3B8", borderColorHex = "#E2E8F0", elevation = 0)
+                    "needs" -> env.copy(colorHex = "#D4950A", backgroundColorHex = "#FFFFFF", labelColorHex = "#B8860B", valueColorHex = "#0F172A", descriptionColorHex = "#64748B", borderColorHex = "#E2E8F0", elevation = 0)
+                    "wants" -> env.copy(colorHex = "#2563EB", backgroundColorHex = "#FFFFFF", labelColorHex = "#1D6DB8", valueColorHex = "#0F172A", descriptionColorHex = "#64748B", borderColorHex = "#E2E8F0", elevation = 0)
+                    "savings" -> env.copy(colorHex = "#A67B00", backgroundColorHex = "#FFFFFF", labelColorHex = "#A67B00", valueColorHex = "#0F172A", descriptionColorHex = "#64748B", borderColorHex = "#E2E8F0", elevation = 0)
+                    else -> env.copy(backgroundColorHex = "#FFFFFF", borderColorHex = "#E2E8F0", elevation = 0)
                 }
             }
 

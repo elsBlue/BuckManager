@@ -709,7 +709,10 @@ fun DashboardScreen(
             // Envelopes List
             items(envelopes) { env ->
                 val stats = viewModel.getEnvelopeStats(env.id)
-                val envContainerColor = if (!env.backgroundImageUri.isNullOrBlank()) Color.Transparent else parseHexColor(env.backgroundColorHex, Color(0xFF1A1E30))
+                val envContainerColor = if (!env.backgroundImageUri.isNullOrBlank()) Color.Transparent else parseHexColor(
+                    env.backgroundColorHex,
+                    if (isDarkMode) Color(0xFF181C26) else Color.White
+                )
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
