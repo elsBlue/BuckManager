@@ -4,9 +4,9 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- White B Safe-zone 66dp. Optical center. -->
+    <!-- Themed / monochrome B Safe-zone 66dp. Optical center. -->
     <path
-        android:fillColor="#FFFFFFFF"
+        android:fillColor="#FF000000"
         android:fillType="evenOdd"
         android:pathData="M 54.05 47.56 Q 57.09 47.56 58.67 46.22 Q 60.24 44.88 60.24 42.27 Q 60.24 39.69 58.67 38.33 Q 57.09 36.97 54.05 36.97 H 46.91 V 47.56 Z M 54.48 69.43 Q 58.37 69.43 60.33 67.78 Q 62.29 66.14 62.29 62.83 Q 62.29 59.58 60.34 57.96 Q 58.4 56.33 54.48 56.33 H 46.91 V 69.43 Z M 66.47 51.44 Q 70.62 52.65 72.9 55.9 Q 75.18 59.14 75.18 63.87 Q 75.18 71.1 70.29 74.65 Q 65.4 78.2 55.42 78.2 H 34.02 V 28.2 H 53.38 Q 63.79 28.2 68.46 31.35 Q 73.14 34.5 73.14 41.43 Q 73.14 45.08 71.43 47.64 Q 69.72 50.2 66.47 51.44 Z" />
 </vector>
