@@ -450,7 +450,8 @@ fun DashboardScreen(
                                 Text(
                                     text = "Paycheck, transfer, or cash in — envelopes fill after that.",
                                     color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
-                                    fontSize = 12.sp
+                                    fontSize = 12.sp,
+                                    lineHeight = 16.sp
                                 )
                             }
                         }
@@ -594,6 +595,7 @@ fun DashboardScreen(
                                     text = "Set a target when you are ready. For now, record income first.",
                                     color = labelColor.copy(alpha = 0.85f),
                                     fontSize = 13.sp,
+                                    lineHeight = 17.sp,
                                     fontWeight = FontWeight.Medium
                                 )
 

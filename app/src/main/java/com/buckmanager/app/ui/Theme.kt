@@ -1,10 +1,19 @@
 package com.buckmanager.app.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
 
 val GoldAccent = Color(0xFFF5B041)
 val CobaltBlue = Color(0xFF1D2A96)
@@ -40,18 +49,63 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF121926)
 )
 
+private val CompactLineHeight = LineHeightStyle(
+    alignment = LineHeightStyle.Alignment.Center,
+    trim = LineHeightStyle.Trim.Both
+)
+
+private fun TextStyle.compact(lineHeightMultiplier: Float = 1.28f): TextStyle {
+    val nextLineHeight = if (fontSize.isSp) (fontSize.value * lineHeightMultiplier).sp else lineHeight
+    return copy(
+        lineHeight = nextLineHeight,
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
+        lineHeightStyle = CompactLineHeight
+    )
+}
+
+private val CompactTypography: Typography = Typography().let { base ->
+    base.copy(
+        displayLarge = base.displayLarge.compact(1.15f),
+        displayMedium = base.displayMedium.compact(1.15f),
+        displaySmall = base.displaySmall.compact(1.2f),
+        headlineLarge = base.headlineLarge.compact(1.2f),
+        headlineMedium = base.headlineMedium.compact(1.2f),
+        headlineSmall = base.headlineSmall.compact(1.22f),
+        titleLarge = base.titleLarge.compact(1.2f),
+        titleMedium = base.titleMedium.compact(1.22f),
+        titleSmall = base.titleSmall.compact(1.22f),
+        bodyLarge = base.bodyLarge.compact(1.3f),
+        bodyMedium = base.bodyMedium.compact(1.3f),
+        bodySmall = base.bodySmall.compact(1.3f),
+        labelLarge = base.labelLarge.compact(1.2f),
+        labelMedium = base.labelMedium.compact(1.2f),
+        labelSmall = base.labelSmall.compact(1.2f)
+    )
+}
+
+/** Inherited by raw Text() calls that only set fontSize — otherwise they keep bodyLarge's 24sp line height. */
+private val CompactDefaultTextStyle = TextStyle(
+    lineHeight = TextUnit.Unspecified,
+    platformStyle = PlatformTextStyle(includeFontPadding = false),
+    lineHeightStyle = CompactLineHeight
+)
+
 @Composable
 fun BuckManagerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(), // Default to system theme, but controllable
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-    CompositionLocalProvider(LocalSpacing provides GridSpacing()) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            content = content
-        )
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = CompactTypography
+    ) {
+        CompositionLocalProvider(
+            LocalSpacing provides GridSpacing(),
+            LocalTextStyle provides CompactDefaultTextStyle
+        ) {
+            content()
+        }
     }
 }
-

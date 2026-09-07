@@ -902,7 +902,8 @@ fun SettingsModal(
                                 Text(
                                     text = "Keep this file. Drive sync comes later.",
                                     color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
-                                    fontSize = 11.sp
+                                    fontSize = 11.sp,
+                                    lineHeight = 14.sp
                                 )
                             }
                         }
@@ -945,7 +946,8 @@ fun SettingsModal(
                                 Text(
                                     text = if (monetization.isPremium) "Tap to re-check this Play account" else "Already bought? Recover it here.",
                                     color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
-                                    fontSize = 11.sp
+                                    fontSize = 11.sp,
+                                    lineHeight = 14.sp
                                 )
                             }
                         }
@@ -988,7 +990,8 @@ fun SettingsModal(
                                     Text(
                                         text = "Debug only. Unlock customization without Play Billing.",
                                         color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
-                                        fontSize = 11.sp
+                                        fontSize = 11.sp,
+                                        lineHeight = 14.sp
                                     )
                                 }
                                 Switch(
@@ -1040,7 +1043,8 @@ fun SettingsModal(
                                 Text(
                                     text = "Style and pin the goal widget",
                                     color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
-                                    fontSize = 11.sp
+                                    fontSize = 11.sp,
+                                    lineHeight = 14.sp
                                 )
                             }
                         }
@@ -1083,7 +1087,8 @@ fun SettingsModal(
                                     text = "Coming soon — use Export JSON for now" +
                                         if (lastBackupDate != null) " · Last: $lastBackupDate" else "",
                                     color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
-                                    fontSize = 11.sp
+                                    fontSize = 11.sp,
+                                    lineHeight = 14.sp
                                 )
                             }
                         }
