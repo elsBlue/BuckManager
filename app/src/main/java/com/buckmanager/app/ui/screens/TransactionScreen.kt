@@ -98,7 +98,7 @@ fun TransactionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(top = 4.dp, bottom = 120.dp),
+            contentPadding = PaddingValues(top = 4.dp, bottom = 88.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
@@ -315,7 +315,7 @@ fun TransactionScreen(
             onClick = { showTransactionBottomSheet = true },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 100.dp),
+                .padding(end = 20.dp, bottom = 16.dp),
             containerColor = Color(0xFFFCBF36),
             contentColor = Color.White,
             shape = RoundedCornerShape(16.dp)

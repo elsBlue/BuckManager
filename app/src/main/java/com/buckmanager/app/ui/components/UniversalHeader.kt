@@ -1,6 +1,7 @@
 package com.buckmanager.app.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -10,13 +11,14 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import com.buckmanager.app.ui.components.parseHexColor
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +45,6 @@ fun UniversalHeader(
     val appNameColor = appNameColorHex?.let { parseHexColor(it, defaultTextColor) } ?: textColorHex?.let { parseHexColor(it, defaultTextColor) } ?: defaultTextColor
     val titleDisplayColor = titleColorHex?.let { parseHexColor(it, defaultTextColor) } ?: textColorHex?.let { parseHexColor(it, defaultTextColor) } ?: defaultTextColor
     val buttonBg = if (isDarkMode) Color(0xFF231F33) else Color(0xFFE2E8F0)
-    val iconTint = textColorHex?.let { parseHexColor(it, defaultTextColor) } ?: defaultTextColor
 
     Row(
         modifier = Modifier
@@ -92,80 +93,76 @@ fun UniversalHeader(
             }
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Eye toggle for hide balances
             if (showHideBalances) {
-                IconButton(
+                HeaderIconChip(
                     onClick = onToggleHideBalances,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(buttonBg)
-                ) {
-                    Icon(
-                        imageVector = if (hideBalances) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = "Toggle Balance Visibility",
-                        tint = if (hideBalances) Color(0xFF9CA3AF) else Color(0xFF3673FC),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                    imageVector = if (hideBalances) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                    contentDescription = "Toggle Balance Visibility",
+                    tint = if (hideBalances) Color(0xFF9CA3AF) else Color(0xFF3673FC),
+                    background = buttonBg
+                )
             }
 
             if (showUnlockCustomization) {
                 if (!hasPremium) {
-                    IconButton(
+                    HeaderIconChip(
                         onClick = onPremiumClick,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(buttonBg)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Unlock customization",
-                            tint = Color(0xFFFCBF36),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Unlock customization",
+                        tint = Color(0xFFFCBF36),
+                        background = buttonBg
+                    )
                 } else {
-                    IconButton(
+                    HeaderIconChip(
                         onClick = onToggleLock,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(buttonBg)
-                    ) {
-                        Icon(
-                            imageVector = if (isEditLocked) Icons.Default.Lock else Icons.Default.LockOpen,
-                            contentDescription = "Toggle Lock",
-                            tint = Color(0xFFFCBF36),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                        imageVector = if (isEditLocked) Icons.Default.Lock else Icons.Default.LockOpen,
+                        contentDescription = "Toggle Lock",
+                        tint = Color(0xFFFCBF36),
+                        background = buttonBg
+                    )
                 }
             }
 
             if (showUnlockCustomization && hasPremium && !isEditLocked && onCustomizeClick != null) {
-                IconButton(
+                HeaderIconChip(
                     onClick = onCustomizeClick,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(buttonBg)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Palette,
-                        contentDescription = "Customize Background",
-                        tint = GoldAccent,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                    imageVector = Icons.Default.Palette,
+                    contentDescription = "Customize Background",
+                    tint = GoldAccent,
+                    background = buttonBg
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun HeaderIconChip(
+    onClick: () -> Unit,
+    imageVector: ImageVector,
+    contentDescription: String,
+    tint: Color,
+    background: Color
+) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(background)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            tint = tint,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
