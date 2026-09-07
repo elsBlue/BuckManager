@@ -322,6 +322,8 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                     viewModel.exportToJson(context, uri)
                     android.widget.Toast.makeText(context, "Exporting JSON backup...", android.widget.Toast.LENGTH_SHORT).show()
                 },
+                onShareLook = { name -> viewModel.shareLook(context, name) },
+                onImportLook = { uri -> viewModel.importLook(context, uri) },
                 onRestorePurchases = { viewModel.restorePurchases() },
                 onToggleTestPremium = { viewModel.setTestPremiumEnabled(it) }
             )

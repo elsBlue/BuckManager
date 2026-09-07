@@ -628,6 +628,8 @@ fun SettingsModal(
     onOpenCustomizeWidget: () -> Unit = {},
     onCurrencyChanged: () -> Unit = {},
     onExportJson: (android.net.Uri) -> Unit = {},
+    onShareLook: (String) -> Unit = {},
+    onImportLook: (android.net.Uri) -> Unit = {},
     onRestorePurchases: () -> Unit = {},
     onToggleTestPremium: (Boolean) -> Unit = {}
 ) {
@@ -639,6 +641,13 @@ fun SettingsModal(
     ) { uri ->
         uri?.let(onExportJson)
     }
+    val importLookLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let(onImportLook)
+    }
+    var showShareLookDialog by remember { mutableStateOf(false) }
+    var shareLookName by remember { mutableStateOf("My Buck look") }
 
     // Full Screen Overlay & Drawer Panel
     Box(modifier = Modifier.fillMaxSize()) {
@@ -1190,6 +1199,76 @@ fun SettingsModal(
 
                                 Divider(color = if (isDarkMode) Color(0xFF282436) else Color(0xFFE2E8F0))
 
+                            Surface(
+                                onClick = { showShareLookDialog = true },
+                                color = Color.Transparent
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Share,
+                                            contentDescription = "Share look",
+                                            tint = GoldAccent,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        Column {
+                                            Text("Share look", color = if (isDarkMode) Color.White else Color(0xFF121926), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                            Text(
+                                                "Colors and photos as a file. Not your money.",
+                                                color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
+                                                fontSize = 11.sp,
+                                                lineHeight = 14.sp
+                                            )
+                                        }
+                                    }
+                                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A))
+                                }
+                            }
+
+                            Divider(color = if (isDarkMode) Color(0xFF282436) else Color(0xFFE2E8F0))
+
+                            Surface(
+                                onClick = { importLookLauncher.launch("*/*") },
+                                color = Color.Transparent
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Download,
+                                            contentDescription = "Import look",
+                                            tint = Color(0xFF3673FC),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        Column {
+                                            Text("Import look", color = if (isDarkMode) Color.White else Color(0xFF121926), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                            Text(
+                                                "Apply a .bucktheme file from a friend",
+                                                color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
+                                                fontSize = 11.sp,
+                                                lineHeight = 14.sp
+                                            )
+                                        }
+                                    }
+                                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A))
+                                }
+                            }
+
+                            Divider(color = if (isDarkMode) Color(0xFF282436) else Color(0xFFE2E8F0))
+
                             // Daily Reminder Row
                             // Currency Row
                             Surface(
@@ -1239,8 +1318,47 @@ fun SettingsModal(
     val dialogContainer = if (isDarkMode) Color(0xFF181C26) else Color(0xFFFFFFFF)
     val dialogTitleColor = if (isDarkMode) Color.White else Color(0xFF121926)
     val dialogSubtitleColor = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A)
-    val dialogBorderColor = if (isDarkMode) Color(0xFF2A273C) else Color(0xFFCBD5E1)
 
+    if (showShareLookDialog) {
+        AlertDialog(
+            onDismissRequest = { showShareLookDialog = false },
+            containerColor = dialogContainer,
+            title = {
+                Text("Share look", color = dialogTitleColor, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        "Sends colors, photos, and shapes. Balances, envelope %, and goal amounts stay private. Matching envelopes (Needs, Wants, Savings, Main) pick up the look.",
+                        color = dialogSubtitleColor,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+                    OutlinedTextField(
+                        value = shareLookName,
+                        onValueChange = { shareLookName = it.take(40) },
+                        label = { Text("Look name") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = appTextFieldColors(isDarkMode)
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showShareLookDialog = false
+                    onShareLook(shareLookName.ifBlank { "My Buck look" })
+                }) {
+                    Text("Share", color = GoldAccent, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showShareLookDialog = false }) {
+                    Text("Cancel", color = dialogSubtitleColor)
+                }
+            }
+        )
+    }
 
     CurrencyModal(
         visible = showCurrencyModal,

@@ -10,6 +10,7 @@ import com.buckmanager.app.data.AppDatabase
 import com.buckmanager.app.data.SettingEntity
 import com.buckmanager.app.data.TransactionEntity
 import com.buckmanager.app.model.*
+import com.buckmanager.app.utils.ThemePackUtils
 import com.buckmanager.app.widget.GoalAppWidgetProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -873,29 +874,104 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
     // Share Customization
     fun exportCustomizationJson(): String {
         val payload = SharedCustomizationPayload(
+            themeName = "My Buck look",
             globalBackground = _globalBackground.value,
             headerCardsConfig = _headerCardsConfig.value,
-            envelopes = _envelopes.value
+            envelopes = _envelopes.value,
+            fundGoal = _fundGoal.value
         )
         return json.encodeToString(payload)
+    }
+
+    fun shareLook(context: android.content.Context, themeName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val payload = ThemePackUtils.stripPrivateAmounts(
+                    SharedCustomizationPayload(
+                        themeName = themeName.ifBlank { "My Buck look" },
+                        globalBackground = _globalBackground.value,
+                        headerCardsConfig = _headerCardsConfig.value,
+                        envelopes = _envelopes.value,
+                        fundGoal = _fundGoal.value
+                    )
+                )
+                val file = ThemePackUtils.createPackFile(context, payload)
+                val uri = androidx.core.content.FileProvider.getUriForFile(
+                    context,
+                    ThemePackUtils.fileProviderAuthority(context),
+                    file
+                )
+                withContext(Dispatchers.Main) {
+                    val share = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                        type = "application/zip"
+                        putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                        putExtra(android.content.Intent.EXTRA_SUBJECT, payload.themeName)
+                        putExtra(
+                            android.content.Intent.EXTRA_TEXT,
+                            "Buck Manager look: ${payload.themeName}"
+                        )
+                        clipData = android.content.ClipData.newRawUri("look", uri)
+                        addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(
+                        android.content.Intent.createChooser(share, "Share look").apply {
+                            if (context !is Activity) {
+                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                        }
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _userNotice.value = "Couldn't pack this look. Try again."
+            }
+        }
+    }
+
+    fun importLook(context: android.content.Context, uri: android.net.Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val payload = ThemePackUtils.importPack(context, uri)
+                applyLookPayload(payload)
+                _userNotice.value = "Look applied. Your money and envelopes stay yours."
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _userNotice.value = e.message?.takeIf { it.length < 80 } ?: "Couldn't open that look file."
+            }
+        }
     }
 
     fun importCustomizationJson(jsonString: String, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                markCustomized()
                 val payload = json.decodeFromString<SharedCustomizationPayload>(jsonString)
-                saveSetting("global_background_config", json.encodeToString(payload.globalBackground))
-                saveSetting("header_cards_config", json.encodeToString(payload.headerCardsConfig))
-                if (payload.envelopes.isNotEmpty()) {
-                    saveSetting("envelopes_config", json.encodeToString(payload.envelopes))
-                }
-                loadAllData()
-                onResult(true, "Custom theme applied successfully!")
+                applyLookPayload(payload)
+                onResult(true, "Look applied. Your money is unchanged.")
             } catch (e: Exception) {
                 onResult(false, "Invalid theme customization code.")
             }
         }
+    }
+
+    private suspend fun applyLookPayload(payload: SharedCustomizationPayload) {
+        markCustomized()
+        _globalBackground.value = payload.globalBackground
+        saveSetting("global_background_config", json.encodeToString(payload.globalBackground))
+        _headerCardsConfig.value = payload.headerCardsConfig
+        saveSetting("header_cards_config", json.encodeToString(payload.headerCardsConfig))
+
+        val packedById = payload.envelopes.associateBy { it.id }
+        val mergedEnvelopes = _envelopes.value.map { env ->
+            val packed = packedById[env.id] ?: return@map env
+            ThemePackUtils.mergeEnvelopeLook(env, packed)
+        }
+        _envelopes.value = mergedEnvelopes
+        saveSetting("envelopes_config", json.encodeToString(mergedEnvelopes))
+
+        val mergedGoal = ThemePackUtils.mergeFundGoalLook(_fundGoal.value, payload.fundGoal)
+        _fundGoal.value = mergedGoal
+        saveSetting("fund_goal_config", json.encodeToString(mergedGoal))
+        GoalAppWidgetProvider.saveGoalToPrefs(getApplication(), mergedGoal)
     }
 
     private suspend fun saveSetting(key: String, value: String) {

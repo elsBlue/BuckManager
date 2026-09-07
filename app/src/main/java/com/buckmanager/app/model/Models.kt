@@ -157,9 +157,12 @@ data class BackupPayload(
 
 @Serializable
 data class SharedCustomizationPayload(
+    val format: String = "bucktheme",
+    val version: Int = 1,
     val themeName: String = "Custom Buck Theme",
     val globalBackground: GlobalBackgroundConfig = GlobalBackgroundConfig(),
     val headerCardsConfig: HeaderCardsConfig = HeaderCardsConfig(),
-    val envelopes: List<Envelope> = emptyList()
+    val envelopes: List<Envelope> = emptyList(),
+    val fundGoal: FundGoalConfig = FundGoalConfig()
 )
 
