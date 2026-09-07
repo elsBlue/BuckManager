@@ -676,14 +676,17 @@ fun BackgroundEditorModal(
             Spacer(modifier = Modifier.height(24.dp))
 
             // STICKY LIVE CANVAS PREVIEW
+            val previewText = parseHexColor(selectedTextColor, if (isDarkMode) Color.White else Color(0xFF0F172A))
+            val previewApp = parseHexColor(appNameColorHex, previewText)
+            val previewTitle = parseHexColor(titleColorHex, previewText)
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
+                    .height(148.dp)
                     .padding(horizontal = 24.dp)
                     .padding(bottom = 24.dp),
-                shape = RoundedCornerShape(24.dp),
-                color = parseHexColor(selectedBg, Color(0xFF0F1117)),
+                shape = RoundedCornerShape(AppShape.panel),
+                color = parseHexColor(selectedBg, if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF6FAFD)),
                 border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f)),
                 shadowElevation = 0.dp
             ) {
@@ -701,27 +704,36 @@ fun BackgroundEditorModal(
                                 .background(Color.Black.copy(alpha = (dimOpacity / 100f).coerceIn(0f, 0.98f)))
                         )
                     }
-
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "LIVE PREVIEW",
-                            color = GoldAccent,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            letterSpacing = 2.sp
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Effect: ${selectedEffect.uppercase()}  •  Dim: ${dimOpacity.toInt()}%",
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 13.sp
-                        )
+                    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF3673FC)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("B", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text("BUCK MANAGER", color = previewApp.copy(alpha = 0.5f), fontWeight = FontWeight.ExtraBold, fontSize = 10.sp, letterSpacing = 0.8.sp)
+                                Text("Dashboard", color = previewTitle, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(Color(0xFF3673FC))
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                        ) {
+                            Column {
+                                Text("NET WORTH", color = Color.White.copy(alpha = 0.8f), fontWeight = FontWeight.Bold, fontSize = 10.sp, letterSpacing = 1.sp)
+                                Text("Rp 12.500.000", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                            }
+                        }
                     }
                 }
             }
@@ -1098,62 +1110,38 @@ fun HeaderCardEditorModal(
             Spacer(modifier = Modifier.height(16.dp))
 
             // STICKY CARD LIVE PREVIEW
-            Box(
+            HeaderCardLook(
+                cardKey = cardKey,
+                config = liveHeaderConfig(
+                    backgroundColorHex = selectedBg,
+                    backgroundImageUri = bgUri.ifBlank { null },
+                    dimOpacity = dimOpacity.toInt(),
+                    radiusTopLeft = radiusTopLeft,
+                    radiusTopRight = radiusTopRight,
+                    radiusBottomRight = radiusBottomRight,
+                    radiusBottomLeft = radiusBottomLeft,
+                    borderWidth = borderWidth,
+                    borderColorHex = borderColorHex,
+                    paddingTop = paddingTop,
+                    paddingRight = paddingRight,
+                    paddingBottom = paddingBottom,
+                    paddingLeft = paddingLeft,
+                    useGradient = useGradient,
+                    gradientColors = if (useGradient) listOf(gradColor1, gradColor2) else emptyList(),
+                    gradientAngle = gradientAngle,
+                    labelColorHex = labelColor,
+                    valueColorHex = valueColor
+                ),
+                valueText = when (cardKey) {
+                    "income" -> "+Rp 8.400.000"
+                    "expense" -> "-Rp 2.150.000"
+                    else -> "Rp 12.500.000"
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
                     .padding(bottom = 16.dp)
-                    .customCardStyle(
-                        shape = RoundedCornerShape(radiusTopLeft.dp, radiusTopRight.dp, radiusBottomRight.dp, radiusBottomLeft.dp),
-                        backgroundColor = parseHexColor(selectedBg, Color(0xFF181C26)),
-                        useGradient = useGradient,
-                        gradientColors = listOf(parseHexColor(gradColor1), parseHexColor(gradColor2)),
-                        gradientAngle = gradientAngle,
-                        borderTop = borderWidth.dp,
-                        borderRight = borderWidth.dp,
-                        borderBottom = borderWidth.dp,
-                        borderLeft = borderWidth.dp,
-                        borderColor = parseHexColor(borderColorHex, Color(0xFFCBD5E1))
-                    )
-            ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    if (bgUri.isNotBlank()) {
-                        AsyncImage(
-                            model = bgUri,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.matchParentSize()
-                        )
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(Color.Black.copy(alpha = (dimOpacity / 100f).coerceIn(0f, 0.98f)))
-                        )
-                    }
-
-                    Column(modifier = Modifier.padding(start = paddingLeft.dp, top = paddingTop.dp, end = paddingRight.dp, bottom = paddingBottom.dp)) {
-                        Text(
-                            text = when (cardKey) {
-                                "netWorth" -> "NET WORTH"
-                                "income" -> "INCOME"
-                                "expense" -> "EXPENSE"
-                                else -> cardKey.uppercase()
-                            },
-                            color = parseHexColor(labelColor, Color.White),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
-                            letterSpacing = 1.sp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Rp 12.500.000",
-                            color = parseHexColor(valueColor, Color.White),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 24.sp
-                        )
-                    }
-                }
-            }
+            )
 
             TabRow(
                 selectedTabIndex = selectedTab,
@@ -1546,49 +1534,52 @@ fun EnvelopeEditorModal(
             }
 
             // Sticky preview
-            Box(
+            EnvelopeLook(
+                envelope = envelope.copy(
+                    name = name,
+                    percentage = percentage.toInt(),
+                    colorHex = colorHex,
+                    labelColorHex = colorHex,
+                    iconName = iconName,
+                    backgroundColorHex = bgHex,
+                    valueColorHex = valueColorHex,
+                    borderColorHex = borderColorHex,
+                    radiusTopLeft = radiusTopLeft,
+                    radiusTopRight = radiusTopRight,
+                    radiusBottomRight = radiusBottomRight,
+                    radiusBottomLeft = radiusBottomLeft,
+                    borderTop = borderWidth,
+                    borderRight = borderWidth,
+                    borderBottom = borderWidth,
+                    borderLeft = borderWidth,
+                    paddingTop = paddingTop,
+                    paddingRight = paddingRight,
+                    paddingBottom = paddingBottom,
+                    paddingLeft = paddingLeft,
+                    useGradient = useGradient,
+                    gradientColors = if (useGradient) listOf(gradColor1, gradColor2) else emptyList(),
+                    gradientAngle = gradientAngle,
+                    backgroundImageUri = bgUri.ifBlank { null },
+                    dimOpacity = dimOpacity.toInt()
+                ),
+                remainingText = "Rp 1.250.000",
+                caption = if (envelope.id == "savings") "Secured funds. Do not touch!" else "Left of Rp 2.500.000",
+                isDarkMode = isDarkMode,
+                slider = if (envelope.id != "main") {
+                    {
+                        EnvelopeAllocationSlider(
+                            colorHex = colorHex,
+                            value = percentage,
+                            onChange = {},
+                            onFinished = {},
+                            paddingH = paddingLeft
+                        )
+                    }
+                } else null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 16.dp)
-                    .height(80.dp)
-                    .customCardStyle(
-                        shape = RoundedCornerShape(radiusTopLeft.dp, radiusTopRight.dp, radiusBottomRight.dp, radiusBottomLeft.dp),
-                        backgroundColor = parseHexColor(bgHex, sheetBg),
-                        useGradient = useGradient,
-                        gradientColors = listOf(parseHexColor(gradColor1), parseHexColor(gradColor2)),
-                        gradientAngle = gradientAngle,
-                        borderTop = borderWidth.dp,
-                        borderRight = borderWidth.dp,
-                        borderBottom = borderWidth.dp,
-                        borderLeft = borderWidth.dp,
-                        borderColor = parseHexColor(borderColorHex, Color.Gray)
-                    )
-            ) {
-                if (bgUri.isNotBlank()) {
-                    AsyncImage(
-                        model = bgUri,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.matchParentSize()
-                    )
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(Color.Black.copy(alpha = (dimOpacity / 100f).coerceIn(0f, 0.98f)))
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxSize().padding(start = paddingLeft.dp, top = paddingTop.dp, end = paddingRight.dp, bottom = paddingBottom.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Icon(getIconVector(iconName), contentDescription = null, tint = parseHexColor(colorHex, Color.White), modifier = Modifier.size(24.dp))
-                        Text(name.ifBlank { "Envelope Name" }, color = parseHexColor(valueColorHex, textColor), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    }
-                    Text("${percentage.toInt()}%", color = parseHexColor(colorHex, textColor), fontWeight = FontWeight.Bold)
-                }
-            }
+            )
 
             TabRow(
                 selectedTabIndex = selectedTab,
@@ -2050,27 +2041,49 @@ fun AddEnvelopeModal(
             }
 
             // Sticky preview
-            Surface(
+            EnvelopeLook(
+                envelope = Envelope(
+                    id = "preview",
+                    name = name.ifBlank { "New Envelope" },
+                    percentage = percentage.toInt(),
+                    colorHex = colorHex,
+                    labelColorHex = colorHex,
+                    iconName = iconName,
+                    backgroundColorHex = bgHex,
+                    valueColorHex = valueColorHex,
+                    borderColorHex = borderColorHex,
+                    radiusTopLeft = radiusTopLeft,
+                    radiusTopRight = radiusTopRight,
+                    radiusBottomRight = radiusBottomRight,
+                    radiusBottomLeft = radiusBottomLeft,
+                    borderTop = borderTop,
+                    borderRight = borderRight,
+                    borderBottom = borderBottom,
+                    borderLeft = borderLeft,
+                    paddingTop = paddingTop,
+                    paddingRight = paddingRight,
+                    paddingBottom = paddingBottom,
+                    paddingLeft = paddingLeft,
+                    useGradient = useGradient,
+                    gradientColors = if (useGradient) listOf(gradColor1, gradColor2) else emptyList(),
+                    gradientAngle = gradientAngle
+                ),
+                remainingText = "Rp 0",
+                caption = "No money assigned yet",
+                isDarkMode = isDarkMode,
+                slider = {
+                    EnvelopeAllocationSlider(
+                        colorHex = colorHex,
+                        value = percentage,
+                        onChange = {},
+                        onFinished = {},
+                        paddingH = paddingLeft
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 16.dp)
-                    .height(80.dp),
-                shape = RoundedCornerShape(AppShape.button),
-                color = parseHexColor(bgHex, sheetBg),
-                border = BorderStroke(1.dp, parseHexColor(colorHex, Color.Gray))
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxSize().padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Icon(getIconVector(iconName), contentDescription = null, tint = parseHexColor(colorHex, Color.White), modifier = Modifier.size(24.dp))
-                        Text(name.ifBlank { "New Envelope" }, color = parseHexColor(valueColorHex, textColor), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    }
-                    Text("${percentage.toInt()}%", color = parseHexColor(colorHex, textColor), fontWeight = FontWeight.Bold)
-                }
-            }
+            )
 
             TabRow(
                 selectedTabIndex = selectedTab,

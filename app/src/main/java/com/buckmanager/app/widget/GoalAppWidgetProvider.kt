@@ -104,8 +104,7 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
 
             if (!config.backgroundImageUri.isNullOrBlank()) {
                 try {
-                    val uri = android.net.Uri.parse(config.backgroundImageUri)
-                    val inputStream = context.contentResolver.openInputStream(uri)
+                    val inputStream = com.buckmanager.app.utils.openUriInputStream(context, config.backgroundImageUri!!)
                     val bgBmp = android.graphics.BitmapFactory.decodeStream(inputStream)
                     inputStream?.close()
                     if (bgBmp != null) {

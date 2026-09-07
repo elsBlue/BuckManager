@@ -127,9 +127,7 @@ fun FundGoalEditorModal(
         }
     )
 
-    val targetNum = target.toDoubleOrNull() ?: 1.0
-    val currentNum = current.toDoubleOrNull() ?: 0.0
-    val progressRatio = (currentNum / targetNum.coerceAtLeast(1.0)).coerceIn(0.0, 1.0).toFloat()
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -170,80 +168,39 @@ fun FundGoalEditorModal(
             }
 
             // STICKY CARD LIVE PREVIEW
-            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)) {
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                        .customCardStyle(
-                            shape = RoundedCornerShape(radiusTopLeft.dp, radiusTopRight.dp, radiusBottomRight.dp, radiusBottomLeft.dp),
-                            backgroundColor = parseHexColor(selectedBg, Color(0xFF181C26)),
-                            useGradient = useGradient,
-                            gradientColors = listOf(parseHexColor(gradColor1), parseHexColor(gradColor2)),
-                            gradientAngle = gradientAngle,
-                            borderTop = borderTop.dp,
-                            borderRight = borderRight.dp,
-                            borderBottom = borderBottom.dp,
-                            borderLeft = borderLeft.dp,
-                            borderColor = parseHexColor(borderColorHex, Color(0xFF3B82F6))
-                        )
-                ) {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        if (bgUri.isNotBlank()) {
-                            AsyncImage(
-                                model = bgUri,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.matchParentSize()
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .background(Color.Black.copy(alpha = (dimOpacity / 100f).coerceIn(0f, 0.98f)))
-                            )
-                        }
-
-                        Column(modifier = Modifier.padding(start = paddingLeft.dp, top = paddingTop.dp, end = paddingRight.dp, bottom = paddingBottom.dp)) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("🎯", fontSize = 20.sp)
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = name.ifBlank { "My Goal" },
-                                        color = parseHexColor(valueColor, Color.White),
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp
-                                    )
-                                }
-                                Text(
-                                    text = "${(progressRatio * 100).toInt()}%",
-                                    color = parseHexColor(labelColor, GoldAccent),
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 13.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Saved: ${com.buckmanager.app.model.formatRp(currentNum)} / ${com.buckmanager.app.model.formatRp(targetNum)}",
-                                color = parseHexColor(labelColor, Color(0xFF9CA3AF)),
-                                fontSize = 12.sp
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            LinearProgressIndicator(
-                                progress = { progressRatio },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .clip(RoundedCornerShape(4.dp)),
-                                color = parseHexColor(labelColor, GoldAccent),
-                                trackColor = Color.White.copy(alpha = 0.15f)
-                            )
-                        }
-                    }
-                }
-            }
+            FundGoalLook(
+                config = currentConfig.copy(
+                    name = name,
+                    targetAmount = target.toDoubleOrNull() ?: 0.0,
+                    currentAmount = current.toDoubleOrNull() ?: 0.0,
+                    backgroundColorHex = selectedBg,
+                    backgroundImageUri = bgUri.ifBlank { null },
+                    dimOpacity = dimOpacity.toInt(),
+                    radiusTopLeft = radiusTopLeft,
+                    radiusTopRight = radiusTopRight,
+                    radiusBottomRight = radiusBottomRight,
+                    radiusBottomLeft = radiusBottomLeft,
+                    borderTop = borderTop,
+                    borderRight = borderRight,
+                    borderBottom = borderBottom,
+                    borderLeft = borderLeft,
+                    borderColorHex = borderColorHex,
+                    paddingTop = paddingTop,
+                    paddingRight = paddingRight,
+                    paddingBottom = paddingBottom,
+                    paddingLeft = paddingLeft,
+                    useGradient = useGradient,
+                    gradientColors = if (useGradient) listOf(gradColor1, gradColor2) else emptyList(),
+                    gradientAngle = gradientAngle,
+                    labelColorHex = labelColor,
+                    valueColorHex = valueColor,
+                    btnBgColorHex = btnBgColorHex,
+                    btnTextColorHex = btnTextColorHex
+                ),
+                isDarkMode = isDarkMode,
+                showChrome = false,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)
+            )
 
             var selectedTab by remember { mutableIntStateOf(0) }
             val tabs = listOf("Goal Details", "Colors", "Layout")
@@ -1627,139 +1584,42 @@ fun WidgetCustomizerModal(
             // LIVE PREVIEW OF ANDROID GOAL WIDGET
             Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
                 Text(
-                    text = "PREVIEW WIDGET ASLI:",
+                    text = "HOME SCREEN WIDGET",
                     color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(currentBorderRadius.dp),
-                    color = if (currentBgImageUri.isNotBlank()) Color.Transparent else parseHexColor(currentBgColor, Color(0xFF181C26)),
-                    border = BorderStroke(currentBorderWidth.dp, parseHexColor(currentBorderColor, GoldAccent)),
-                    shadowElevation = 8.dp
-                ) {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        if (currentBgImageUri.isNotBlank()) {
-                            AsyncImage(
-                                model = currentBgImageUri,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.matchParentSize()
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .background(Color.Black.copy(alpha = (currentDimOpacity / 100f).coerceIn(0f, 0.98f)))
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier.padding(currentPadding.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            // Top Row: Title & Percentage Badge
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                val goalName = fundGoalConfig.name.ifBlank { "Target Savings" }
-                                Text(
-                                    text = if (goalName.startsWith("🎯")) goalName else "🎯 $goalName",
-                                    color = parseHexColor(currentValueColor, Color.White),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f),
-                                    maxLines = 1
-                                )
-                                val progressPct = if (fundGoalConfig.targetAmount > 0) {
-                                    ((fundGoalConfig.currentAmount / fundGoalConfig.targetAmount) * 100).toInt()
-                                } else 0
-                                Text(
-                                    text = "$progressPct%",
-                                    color = parseHexColor(currentLabelColor, GoldAccent),
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-
-                            // Amount Row
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Bottom
-                            ) {
-                                Text(
-                                    text = formatRp(fundGoalConfig.currentAmount),
-                                    color = parseHexColor(currentValueColor, Color.White),
-                                    fontSize = 17.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "Target: ${formatRp(fundGoalConfig.targetAmount)}",
-                                    color = parseHexColor(currentLabelColor, Color(0xFF9CA3AF)),
-                                    fontSize = 11.sp
-                                )
-                            }
-
-                            // Progress Bar
-                            val pctFloat = if (fundGoalConfig.targetAmount > 0) {
-                                (fundGoalConfig.currentAmount / fundGoalConfig.targetAmount).toFloat().coerceIn(0f, 1f)
-                            } else 0f
-                            LinearProgressIndicator(
-                                progress = { pctFloat },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .clip(RoundedCornerShape(4.dp)),
-                                color = parseHexColor(currentLabelColor, GoldAccent),
-                                trackColor = Color.White.copy(alpha = 0.2f)
-                            )
-
-                            // Deposit Buttons Row
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(32.dp)
-                                        .clip(RoundedCornerShape(AppShape.tick))
-                                        .background(parseHexColor(currentBtnBgColor, GoldAccent)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("+ Deposit", color = parseHexColor(currentBtnTextColor, Color.White), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .height(32.dp)
-                                        .clip(RoundedCornerShape(AppShape.tick))
-                                        .background(parseHexColor(currentBtnBgColor, GoldAccent))
-                                        .padding(horizontal = 8.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("+50rb", color = parseHexColor(currentBtnTextColor, Color.White), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .height(32.dp)
-                                        .clip(RoundedCornerShape(AppShape.tick))
-                                        .background(parseHexColor(currentBtnBgColor, GoldAccent))
-                                        .padding(horizontal = 8.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("+100rb", color = parseHexColor(currentBtnTextColor, Color.White), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
-                    }
-                }
+                GoalWidgetLook(
+                    config = fundGoalConfig.copy(
+                        backgroundColorHex = currentBgColor,
+                        backgroundImageUri = currentBgImageUri.ifBlank { null },
+                        dimOpacity = currentDimOpacity.toInt(),
+                        radiusTopLeft = currentBorderRadius.toInt(),
+                        radiusTopRight = currentBorderRadius.toInt(),
+                        radiusBottomRight = currentBorderRadius.toInt(),
+                        radiusBottomLeft = currentBorderRadius.toInt(),
+                        borderTop = currentBorderWidth.toInt(),
+                        borderRight = currentBorderWidth.toInt(),
+                        borderBottom = currentBorderWidth.toInt(),
+                        borderLeft = currentBorderWidth.toInt(),
+                        borderColorHex = currentBorderColor,
+                        paddingTop = currentPadding.toInt(),
+                        paddingRight = currentPadding.toInt(),
+                        paddingBottom = currentPadding.toInt(),
+                        paddingLeft = currentPadding.toInt(),
+                        labelColorHex = currentLabelColor,
+                        valueColorHex = currentValueColor
+                    )
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Display only — tap opens the app. Deposit lives on the dashboard card.",
+                    color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp
+                )
             }
 
             var selectedTab by remember { mutableIntStateOf(0) }
