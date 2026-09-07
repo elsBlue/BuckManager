@@ -166,17 +166,13 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                 ParticleEffectCanvas(effectType = globalBg.particleEffect)
             }
 
-            Scaffold(
-                contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                containerColor = Color.Transparent
-            ) { _ ->
-                NavHost(
-                    navController = navController,
-                    startDestination = startDestination,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                ) {
+            NavHost(
+                navController = navController,
+                startDestination = startDestination,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+            ) {
                     composable("onboarding") {
                         OnboardingScreen(
                             isDarkMode = isDarkMode,
@@ -227,10 +223,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                             onEditFundGoal = { showFundGoalEditor = true }
                         )
                     }
-
-
                 }
-            }
 
             if (currentRoute in listOf("dashboard", "transactions")) {
                 GlassBottomNav(
