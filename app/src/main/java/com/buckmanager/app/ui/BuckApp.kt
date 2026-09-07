@@ -42,6 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.buckmanager.app.model.Envelope
+import com.buckmanager.app.model.AuthSession
 import com.buckmanager.app.ui.components.*
 
 import com.buckmanager.app.ui.screens.DashboardScreen
@@ -92,6 +93,8 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
         // Modal States
         var showSettings by remember { mutableStateOf(false) }
         var showWidgetCustomizer by remember { mutableStateOf(false) }
+        var showSignInGate by remember { mutableStateOf(false) }
+        var signInReason by remember { mutableStateOf(SignInGateReason.Restore) }
 
         var editingEnvelope by remember { mutableStateOf<Envelope?>(null) }
         var showAddEnvelope by remember { mutableStateOf(false) }
@@ -324,10 +327,33 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                 },
                 onShareLook = { name -> viewModel.shareLook(context, name) },
                 onImportLook = { uri -> viewModel.importLook(context, uri) },
-                onRestorePurchases = { viewModel.restorePurchases() },
+                onRestorePurchases = {
+                    if (AuthSession.isGoogle(userEmail)) {
+                        viewModel.restorePurchases()
+                    } else {
+                        showSettings = false
+                        signInReason = SignInGateReason.Restore
+                        showSignInGate = true
+                    }
+                },
                 onToggleTestPremium = { viewModel.setTestPremiumEnabled(it) }
             )
 
+            SignInGateDialog(
+                visible = showSignInGate,
+                reason = signInReason,
+                isDarkMode = isDarkMode,
+                onDismiss = { showSignInGate = false },
+                onSignedIn = { email, pic ->
+                    viewModel.setUserEmail(email)
+                    viewModel.setUserProfilePicUrl(pic)
+                    showSignInGate = false
+                    viewModel.showNotice("Signed in as $email")
+                    if (signInReason == SignInGateReason.Restore) {
+                        viewModel.restorePurchases()
+                    }
+                }
+            )
 
             EnvelopeEditorModal(
                 envelope = editingEnvelope,

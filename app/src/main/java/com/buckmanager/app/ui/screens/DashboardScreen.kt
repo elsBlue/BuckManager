@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.buckmanager.app.model.Envelope
+import com.buckmanager.app.model.AuthSession
 import com.buckmanager.app.model.formatRp
 import com.buckmanager.app.ui.AppShape
 import com.buckmanager.app.ui.AppSpacing
@@ -38,6 +39,8 @@ import com.buckmanager.app.ui.appTextFieldColors
 import com.buckmanager.app.utils.customCardStyle
 import com.buckmanager.app.ui.components.GoalDepositModal
 import com.buckmanager.app.ui.components.PremiumModal
+import com.buckmanager.app.ui.components.SignInGateDialog
+import com.buckmanager.app.ui.components.SignInGateReason
 import com.buckmanager.app.model.MonetizationState
 import com.buckmanager.app.ui.components.UniversalHeader
 import com.buckmanager.app.ui.components.getIconVector
@@ -877,23 +880,61 @@ fun DashboardScreen(
 
         val activity = LocalContext.current as? Activity
         val premiumPrice = viewModel.premiumFormattedPrice()
+        val userEmail by viewModel.userEmail.collectAsState()
+        val isGoogleAccount = AuthSession.isGoogle(userEmail)
+        var showSignInGate by remember { mutableStateOf(false) }
+        var signInReason by remember { mutableStateOf(SignInGateReason.Purchase) }
+
         PremiumModal(
             visible = showPremiumModal,
             isDarkMode = isDarkMode,
             monetizationState = monetization,
             purchasePriceLabel = premiumPrice,
+            isGoogleAccount = isGoogleAccount,
+            accountEmail = if (isGoogleAccount) userEmail else null,
             onDismiss = { showPremiumModal = false },
-            onRestorePurchases = { viewModel.restorePurchases() },
-            onPurchase = {
-                if (activity != null) {
-                    viewModel.purchaseLifetimePremium(activity)
+            onRestorePurchases = {
+                if (isGoogleAccount) {
+                    viewModel.restorePurchases()
                 } else {
-                    viewModel.showNotice("Unable to open Play purchase UI.")
+                    signInReason = SignInGateReason.Restore
+                    showSignInGate = true
+                }
+            },
+            onPurchase = {
+                if (isGoogleAccount) {
+                    if (activity != null) {
+                        viewModel.purchaseLifetimePremium(activity)
+                    } else {
+                        viewModel.showNotice("Unable to open Play purchase UI.")
+                    }
+                } else {
+                    signInReason = SignInGateReason.Purchase
+                    showSignInGate = true
                 }
             },
             onEnableTestPremium = {
                 viewModel.setTestPremiumEnabled(true)
                 showPremiumModal = false
+            }
+        )
+        SignInGateDialog(
+            visible = showSignInGate,
+            reason = signInReason,
+            isDarkMode = isDarkMode,
+            onDismiss = { showSignInGate = false },
+            onSignedIn = { email, pic ->
+                viewModel.setUserEmail(email)
+                viewModel.setUserProfilePicUrl(pic)
+                showSignInGate = false
+                viewModel.showNotice("Signed in as $email")
+                when (signInReason) {
+                    SignInGateReason.Purchase -> {
+                        if (activity != null) viewModel.purchaseLifetimePremium(activity)
+                        else viewModel.showNotice("Unable to open Play purchase UI.")
+                    }
+                    SignInGateReason.Restore -> viewModel.restorePurchases()
+                }
             }
         )
     }

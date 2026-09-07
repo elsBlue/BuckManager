@@ -38,6 +38,8 @@ fun PremiumModal(
     isDarkMode: Boolean,
     monetizationState: MonetizationState,
     purchasePriceLabel: String? = null,
+    isGoogleAccount: Boolean = false,
+    accountEmail: String? = null,
     onDismiss: () -> Unit,
     onPurchase: () -> Unit,
     onRestorePurchases: () -> Unit = {},
@@ -99,8 +101,11 @@ fun PremiumModal(
                 Text("Premium", color = textColor, fontWeight = FontWeight.Black, fontSize = 24.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    if (isPremium) "Lifetime is on. Customize any card."
-                    else "Unlock looks for every card — once, forever on this Play account.",
+                    when {
+                        isPremium -> "Lifetime is on. Customize any card."
+                        isGoogleAccount -> "Unlock looks for every card — once, on ${accountEmail ?: "this Google account"}."
+                        else -> "You're on a local session. Sign in with Google so Play can keep the purchase."
+                    },
                     color = muted,
                     fontSize = 14.sp,
                     lineHeight = 20.sp
@@ -165,11 +170,14 @@ fun PremiumModal(
                     Button(
                         onClick = onPurchase,
                         modifier = Modifier.fillMaxWidth().height(52.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = GoldAccent),
+                        colors = ButtonDefaults.buttonColors(containerColor = if (isGoogleAccount) GoldAccent else Color(0xFF3673FC)),
                         shape = RoundedCornerShape(AppShape.button)
                     ) {
                         Text(
-                            "Unlock lifetime  ·  ${purchasePriceLabel ?: formatRp(15000.0)}",
+                            if (isGoogleAccount)
+                                "Unlock lifetime  ·  ${purchasePriceLabel ?: formatRp(15000.0)}"
+                            else
+                                "Sign in to unlock",
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp
