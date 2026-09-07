@@ -132,7 +132,7 @@ fun DashboardScreen(
                             borderRight = netCard.borderRight.dp,
                             borderBottom = netCard.borderBottom.dp,
                             borderLeft = netCard.borderLeft.dp,
-                            borderColor = parseHexColor(netCard.borderColorHex, Color.Gray).copy(alpha = 0.2f)
+                            borderColor = parseHexColor(netCard.borderColorHex, Color.Gray)
                         )
                 ) {
                     Box(modifier = Modifier.fillMaxWidth()) {
@@ -225,7 +225,7 @@ fun DashboardScreen(
                                 borderRight = incCard.borderRight.dp,
                                 borderBottom = incCard.borderBottom.dp,
                                 borderLeft = incCard.borderLeft.dp,
-                                borderColor = parseHexColor(incCard.borderColorHex, Color.Gray).copy(alpha = 0.2f)
+                                borderColor = parseHexColor(incCard.borderColorHex, Color.Gray)
                             )
                     ) {
                         Box(modifier = Modifier.fillMaxWidth()) {
@@ -318,7 +318,7 @@ fun DashboardScreen(
                                 borderRight = expCard.borderRight.dp,
                                 borderBottom = expCard.borderBottom.dp,
                                 borderLeft = expCard.borderLeft.dp,
-                                borderColor = parseHexColor(expCard.borderColorHex, Color.Gray).copy(alpha = 0.2f)
+                                borderColor = parseHexColor(expCard.borderColorHex, Color.Gray)
                             )
                     ) {
                         Box(modifier = Modifier.fillMaxWidth()) {
@@ -469,7 +469,7 @@ fun DashboardScreen(
                             borderRight = fundGoal.borderRight.dp,
                             borderBottom = fundGoal.borderBottom.dp,
                             borderLeft = fundGoal.borderLeft.dp,
-                            borderColor = labelColor.copy(alpha = 0.4f)
+                            borderColor = parseHexColor(fundGoal.borderColorHex, labelColor)
                         )
                 ) {
                     Box(modifier = Modifier.fillMaxWidth()) {
@@ -728,7 +728,7 @@ fun DashboardScreen(
                             borderRight = env.borderRight.dp,
                             borderBottom = env.borderBottom.dp,
                             borderLeft = env.borderLeft.dp,
-                            borderColor = parseHexColor(env.borderColorHex, Color.Gray).copy(alpha = 0.2f)
+                            borderColor = parseHexColor(env.borderColorHex, Color.Gray)
                         )
                 ) {
                     Box(modifier = Modifier.fillMaxWidth()) {
@@ -926,7 +926,9 @@ fun TransactionBottomSheet(
 
     var type by remember { mutableStateOf("expense") } // "expense" or "income"
     var amountText by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf(envelopes.firstOrNull()?.id ?: "needs") }
+    var selectedCategory by remember {
+        mutableStateOf(envelopes.firstOrNull { it.id != "main" }?.id ?: envelopes.firstOrNull()?.id ?: "needs")
+    }
     var descriptionText by remember { mutableStateOf("") }
 
     ModalBottomSheet(

@@ -1,5 +1,6 @@
 package com.buckmanager.app.ui.components
 import com.buckmanager.app.utils.customCardStyle
+import com.buckmanager.app.utils.persistBackgroundImage
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -76,6 +77,7 @@ fun FundGoalEditorModal(
     val btnBg = if (isDarkMode) Color(0xFF181C26) else Color(0xFFE2E8F0)
 
     var name by remember(currentConfig) { mutableStateOf(currentConfig.name) }
+    val context = LocalContext.current
     var target by remember(currentConfig) { mutableStateOf(currentConfig.targetAmount.toLong().toString()) }
     var current by remember(currentConfig) { mutableStateOf(currentConfig.currentAmount.toLong().toString()) }
 
@@ -120,7 +122,7 @@ fun FundGoalEditorModal(
         visible = croppingImageUri != null,
         onDismiss = { croppingImageUri = null },
         onCropConfirm = { croppedUri ->
-            bgUri = croppedUri
+            bgUri = persistBackgroundImage(context, croppedUri) ?: croppedUri
             croppingImageUri = null
         }
     )
@@ -1449,7 +1451,7 @@ fun WidgetCustomizerModal(
         visible = croppingImageUri != null,
         onDismiss = { croppingImageUri = null },
         onCropConfirm = { croppedUri ->
-            currentBgImageUri = croppedUri
+            currentBgImageUri = persistBackgroundImage(context, croppedUri) ?: croppedUri
             croppingImageUri = null
         }
     )

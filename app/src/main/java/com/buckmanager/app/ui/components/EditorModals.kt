@@ -103,7 +103,7 @@ fun LinkedInsetControl(
     val muted = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)
     val textColor = if (isDarkMode) Color.White else Color(0xFF0F172A)
     val allSame = topStart == topEnd && topEnd == bottomEnd && bottomEnd == bottomStart
-    var editEach by remember { mutableStateOf(!allSame) }
+    var editEach by remember(topStart, topEnd, bottomEnd, bottomStart) { mutableStateOf(!allSame) }
     val shared = if (allSame) topStart else ((topStart + topEnd + bottomEnd + bottomStart) / 4)
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -929,7 +929,11 @@ fun BackgroundEditorModal(
             ) {
                 OutlinedButton(
                     onClick = {
-                        selectedBg = "#0F1117"
+                        selectedBg = if (isDarkMode) "#0F1117" else "#F6FAFD"
+                        selectedTextColor = if (isDarkMode) "#FFFFFF" else "#0F172A"
+                        appNameColorHex = if (isDarkMode) "#FFFFFF" else "#000000"
+                        titleColorHex = if (isDarkMode) "#FFFFFF" else "#000000"
+                        budgetEnvelopesColorHex = if (isDarkMode) "#FFFFFF" else "#000000"
                         selectedEffect = "none"
                         bgUri = ""
                         dimOpacity = 30f
@@ -1913,6 +1917,7 @@ fun EnvelopeEditorModal(
                             name = name,
                             percentage = percentage.toInt(),
                             colorHex = colorHex,
+                            labelColorHex = colorHex,
                             iconName = iconName,
                             backgroundColorHex = bgHex,
                             valueColorHex = valueColorHex,
@@ -2249,6 +2254,7 @@ fun AddEnvelopeModal(
                                 name = name,
                                 percentage = percentage.toInt(),
                                 colorHex = colorHex,
+                                labelColorHex = colorHex,
                                 iconName = iconName,
                                 backgroundColorHex = bgHex,
                                 valueColorHex = valueColorHex,

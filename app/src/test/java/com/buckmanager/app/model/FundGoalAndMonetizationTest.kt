@@ -70,12 +70,36 @@ class FundGoalAndMonetizationTest {
     }
 
     @Test
-    fun envelopes_totalPercentage_canValidateHundred() {
+    fun deposit_cannotExceedSpendableBalance() {
+        val netWorth = 80_000.0
+        val alreadyInGoal = 30_000.0
+        val requested = 100_000.0
+        val room = (netWorth - alreadyInGoal).coerceAtLeast(0.0)
+        val applied = minOf(requested, room)
+        assertEquals(50_000.0, applied, 0.01)
+        assertEquals(0.0, minOf(10_000.0, (netWorth - netWorth).coerceAtLeast(0.0)), 0.01)
+    }
+
+    @Test
+    fun withdraw_cannotExceedGoalBalance() {
+        val current = 20_000.0
+        val requested = -50_000.0
+        val applied = maxOf(requested, -current)
+        assertEquals(-20_000.0, applied, 0.01)
+    }
+
+    @Test
+    fun newEnvelope_usesUnassignedMainBufferNotTotalIncludingMain() {
         val envelopes = listOf(
-            Envelope(id = "needs", name = "Needs", percentage = 50, colorHex = "#000"),
-            Envelope(id = "wants", name = "Wants", percentage = 30, colorHex = "#111"),
-            Envelope(id = "savings", name = "Savings", percentage = 20, colorHex = "#222")
+            Envelope(id = "main", name = "Main", percentage = 10, colorHex = "#000"),
+            Envelope(id = "needs", name = "Needs", percentage = 50, colorHex = "#111"),
+            Envelope(id = "wants", name = "Wants", percentage = 30, colorHex = "#222"),
+            Envelope(id = "savings", name = "Savings", percentage = 10, colorHex = "#333")
         )
+        val assigned = envelopes.filter { it.id != "main" }.sumOf { it.percentage }
+        val available = 100 - assigned
+        assertEquals(90, assigned)
+        assertEquals(10, available)
         assertEquals(100, envelopes.sumOf { it.percentage })
     }
 

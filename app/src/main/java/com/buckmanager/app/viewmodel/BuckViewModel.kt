@@ -568,18 +568,31 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
     fun depositToGoal(amount: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             val currentGoal = _fundGoal.value
-            val newAmount = (currentGoal.currentAmount + amount).coerceAtLeast(0.0)
+            val applied = if (amount > 0) {
+                val room = (getNetWorth() - currentGoal.currentAmount).coerceAtLeast(0.0)
+                minOf(amount, room)
+            } else {
+                maxOf(amount, -currentGoal.currentAmount)
+            }
+            if (applied == 0.0) {
+                _userNotice.value = if (amount > 0) {
+                    "Not enough balance to deposit to your goal."
+                } else {
+                    "Goal is empty."
+                }
+                return@launch
+            }
+            val newAmount = (currentGoal.currentAmount + applied).coerceAtLeast(0.0)
             val updatedGoal = currentGoal.copy(currentAmount = newAmount)
             _fundGoal.value = updatedGoal
             saveSetting("fund_goal_config", json.encodeToString(updatedGoal))
             GoalAppWidgetProvider.saveGoalToPrefs(getApplication(), updatedGoal)
-            
-            // Log as a goal transfer so it doesn't reduce Net Worth
+
             addTransaction(
                 type = "expense",
-                amount = amount,
+                amount = applied,
                 category = "goal",
-                description = if (amount > 0) "Deposit to My Goal" else "Withdraw from My Goal"
+                description = if (applied > 0) "Deposit to My Goal" else "Withdraw from My Goal"
             )
         }
     }
@@ -605,7 +618,7 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
             updateMonetization(newMon)
             _isCustomizationLocked.value = false
             _isEditLocked.value = false
-            _userNotice.value = "âœ¨ Customization Unlocked! Edit Mode is Active."
+            _userNotice.value = "Customization unlocked. Edit mode is on."
         }
     }
 

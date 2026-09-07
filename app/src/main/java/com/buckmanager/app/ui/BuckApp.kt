@@ -311,7 +311,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                 visible = editingEnvelope != null,
                 hasPremium = viewModel.hasPremium(),
                 isDarkMode = isDarkMode,
-                totalAllocatedPercentage = envelopes.sumOf { it.percentage },
+                totalAllocatedPercentage = envelopes.filter { it.id != "main" }.sumOf { it.percentage },
                 onDismiss = { editingEnvelope = null },
                 onSave = { updated -> viewModel.updateEnvelope(updated) },
                 onDelete = { id -> viewModel.deleteEnvelope(id) }
@@ -321,7 +321,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                 visible = showAddEnvelope,
                 isDarkMode = isDarkMode,
                 hasPremium = viewModel.hasPremium(),
-                totalAllocatedPercentage = envelopes.sumOf { it.percentage },
+                totalAllocatedPercentage = envelopes.filter { it.id != "main" }.sumOf { it.percentage },
                 onDismiss = { showAddEnvelope = false },
                 onAdd = { env ->
                     viewModel.addEnvelope(env)
