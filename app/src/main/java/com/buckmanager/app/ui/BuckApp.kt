@@ -30,9 +30,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -44,6 +46,7 @@ import com.buckmanager.app.ui.components.*
 import com.buckmanager.app.ui.screens.DashboardScreen
 import com.buckmanager.app.ui.screens.LoginScreen
 import com.buckmanager.app.ui.screens.OnboardingScreen
+import com.buckmanager.app.ui.screens.TransactionBottomSheet
 import com.buckmanager.app.ui.screens.TransactionScreen
 import com.buckmanager.app.viewmodel.BuckViewModel
 
@@ -80,6 +83,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
 
         var editingEnvelope by remember { mutableStateOf<Envelope?>(null) }
         var showAddEnvelope by remember { mutableStateOf(false) }
+        var showTransactionSheet by remember { mutableStateOf(false) }
         var editingHeaderCard by remember { mutableStateOf<String?>(null) }
         var showFundGoalEditor by remember { mutableStateOf(false) }
         var showBackgroundEditor by remember { mutableStateOf(false) }
@@ -100,11 +104,24 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
 
 
         val view = androidx.compose.ui.platform.LocalView.current
+        val canvasColor = parseHexColor(
+            globalBg.backgroundColorHex,
+            if (isDarkMode) DarkBackground else AppChrome.pageLight
+        )
+        val userTextColor = parseHexColor(
+            globalBg.textColorHex,
+            if (isDarkMode) Color.White else Color(0xFF0F172A)
+        )
+        val hasPhoto = !globalBg.backgroundImageUri.isNullOrBlank()
+        val navIsDark = navSurfaceIsDark(canvasColor, userTextColor, hasPhoto, globalBg.dimOpacity)
         androidx.compose.runtime.SideEffect {
             val window = (view.context as android.app.Activity).window
             val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, view)
-            insetsController.isAppearanceLightStatusBars = !isDarkMode
-            insetsController.isAppearanceLightNavigationBars = !isDarkMode
+            insetsController.isAppearanceLightStatusBars = !navIsDark
+            insetsController.isAppearanceLightNavigationBars = !navIsDark
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                window.isNavigationBarContrastEnforced = false
+            }
         }
         var displayedNotice by remember { mutableStateOf<String?>(null) }
         var isNoticeVisible by remember { mutableStateOf(false) }
@@ -125,111 +142,40 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
 
 
 
-        val rootBg = parseHexColor(
-            globalBg.backgroundColorHex,
-            if (isDarkMode) DarkBackground else Color(0xFFF8FAFC)
-        )
+        val rootBg = canvasColor
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(rootBg)
         ) {
+            if (currentRoute in listOf("dashboard", "transactions") && hasPhoto) {
+                AsyncImage(
+                    model = globalBg.backgroundImageUri,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = (globalBg.dimOpacity / 100f).coerceIn(0f, 0.98f)))
+                )
+            }
+            if (currentRoute in listOf("dashboard", "transactions")) {
+                ParticleEffectCanvas(effectType = globalBg.particleEffect)
+            }
+
             Scaffold(
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                bottomBar = {
-                    if (currentRoute in listOf("dashboard", "transactions")) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .navigationBarsPadding()
-                                .padding(bottom = 16.dp, start = 20.dp, end = 20.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val navBg = if (isDarkMode) Color(0xCC0F1117) else Color(0xCCFFFFFF)
-                            val navBorder = if (isDarkMode) GoldAccent.copy(alpha = 0.35f) else Color(0xFFE2E8F0)
-                            val unselectedTint = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)
-                            val activeTint = if (isDarkMode) Color.White else Color.Black
-
-                            Surface(
-                                modifier = Modifier
-                                    .height(58.dp)
-                                    .border(
-                                        AppStroke.thin,
-                                        navBorder,
-                                        RoundedCornerShape(AppShape.panel)
-                                    ),
-                                shape = RoundedCornerShape(AppShape.panel),
-                                color = navBg,
-                                tonalElevation = 0.dp,
-                                shadowElevation = 0.dp
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(horizontal = 24.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Dashboard tab
-                                    IconButton(
-                                        onClick = {
-                                            navController.navigate("dashboard") {
-                                                popUpTo("dashboard") { saveState = true }
-                                                launchSingleTop = true
-                                                restoreState = true
-                                            }
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = if (currentRoute == "dashboard") Icons.Filled.Home else Icons.Outlined.Home,
-                                            contentDescription = "Dashboard",
-                                            tint = if (currentRoute == "dashboard") activeTint else unselectedTint,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
-
-                                    // Transactions tab
-                                    IconButton(
-                                        onClick = {
-                                            navController.navigate("transactions") {
-                                                popUpTo("dashboard") { saveState = true }
-                                                launchSingleTop = true
-                                                restoreState = true
-                                            }
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.History,
-                                            contentDescription = "Transactions",
-                                            tint = if (currentRoute == "transactions") activeTint else unselectedTint,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
-
-                                    // Settings tab
-                                    IconButton(onClick = { showSettings = true }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Menu,
-                                            contentDescription = "Settings",
-                                            tint = unselectedTint,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
                 containerColor = Color.Transparent
-            ) { paddingValues ->
+            ) { _ ->
                 NavHost(
                     navController = navController,
                     startDestination = startDestination,
                     modifier = Modifier
                         .fillMaxSize()
                         .statusBarsPadding()
-                        .padding(paddingValues)
                 ) {
                     composable("onboarding") {
                         OnboardingScreen(
@@ -284,6 +230,46 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
 
 
                 }
+            }
+
+            if (currentRoute in listOf("dashboard", "transactions")) {
+                GlassBottomNav(
+                    currentRoute = currentRoute,
+                    canvasColor = canvasColor,
+                    textColor = userTextColor,
+                    hasPhoto = hasPhoto,
+                    dimOpacity = globalBg.dimOpacity,
+                    onDashboard = {
+                        navController.navigate("dashboard") {
+                            popUpTo("dashboard") { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onTransactions = {
+                        navController.navigate("transactions") {
+                            popUpTo("dashboard") { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onAdd = { showTransactionSheet = true },
+                    onSettings = { showSettings = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(start = 20.dp, end = 20.dp, bottom = 16.dp)
+                )
+            }
+
+            if (showTransactionSheet) {
+                TransactionBottomSheet(
+                    viewModel = viewModel,
+                    envelopes = envelopes,
+                    isDarkMode = isDarkMode,
+                    onDismiss = { showTransactionSheet = false }
+                )
             }
 
             // Modals

@@ -39,7 +39,6 @@ import com.buckmanager.app.utils.customCardStyle
 import com.buckmanager.app.ui.components.GoalDepositModal
 import com.buckmanager.app.ui.components.PremiumModal
 import com.buckmanager.app.model.MonetizationState
-import com.buckmanager.app.ui.components.ParticleEffectCanvas
 import com.buckmanager.app.ui.components.UniversalHeader
 import com.buckmanager.app.ui.components.getIconVector
 import com.buckmanager.app.ui.components.parseHexColor
@@ -84,28 +83,8 @@ fun DashboardScreen(
     val totalExpense = remember(transactions) { viewModel.getTotalExpense() }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(parseHexColor(globalBg.backgroundColorHex, Color(0xFF0F1117)))
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Background Wallpaper Image
-        if (!globalBg.backgroundImageUri.isNullOrBlank()) {
-            AsyncImage(
-                model = globalBg.backgroundImageUri,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = (globalBg.dimOpacity / 100f).coerceIn(0f, 0.98f)))
-            )
-        }
-
-        // Particles Layer
-        ParticleEffectCanvas(effectType = globalBg.particleEffect)
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -879,21 +858,6 @@ fun DashboardScreen(
             } // closes Box(647)
         } // closes items(envelopes)
     } // closes LazyColumn(104)
-
-        // Floating Action Button for Add Transaction
-        FloatingActionButton(
-            onClick = { showTransactionBottomSheet = true },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 16.dp),
-            containerColor = Color(0xFFFCBF36),
-            contentColor = Color.White,
-            shape = RoundedCornerShape(AppShape.button)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Add Transaction")
-        }
-    }
-
 
         GoalDepositModal(
             visible = showGoalDepositModal,

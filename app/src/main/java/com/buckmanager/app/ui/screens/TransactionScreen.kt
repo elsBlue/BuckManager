@@ -56,7 +56,6 @@ fun TransactionScreen(
     val incomeColor = if (isDarkMode) Color(0xFF34D399) else Color(0xFF0E8345)
     val expenseColor = if (isDarkMode) Color(0xFFFB7185) else Color(0xFFD9254C)
     var transactionToDelete by remember { mutableStateOf<Long?>(null) }
-    var showTransactionBottomSheet by remember { mutableStateOf(false) }
 
     // Filter state: "all", "income", "expense"
     var filterType by remember { mutableStateOf("all") }
@@ -92,9 +91,7 @@ fun TransactionScreen(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(parseHexColor(globalBg.backgroundColorHex, if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF5F6FA)))
+        modifier = Modifier.fillMaxSize()
     ) {
         LazyColumn(
             modifier = Modifier
@@ -312,19 +309,6 @@ fun TransactionScreen(
                 }
             }
         }
-
-        // FAB for adding transactions
-        FloatingActionButton(
-            onClick = { showTransactionBottomSheet = true },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 16.dp),
-            containerColor = Color(0xFFFCBF36),
-            contentColor = Color.White,
-            shape = RoundedCornerShape(AppShape.button)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Add Transaction")
-        }
     }
 
     if (transactionToDelete != null) {
@@ -346,16 +330,6 @@ fun TransactionScreen(
                     Text("Cancel", color = textSecondary)
                 }
             }
-        )
-    }
-
-    // Transaction Bottom Sheet (reusing the one from DashboardScreen)
-    if (showTransactionBottomSheet) {
-        TransactionBottomSheet(
-            viewModel = viewModel,
-            envelopes = envelopes,
-            isDarkMode = isDarkMode,
-            onDismiss = { showTransactionBottomSheet = false }
         )
     }
 }
