@@ -1,0 +1,6 @@
+{
+  "name": "Buck Manager",
+  "description": "A personal finance and envelope budgeting application with custom strategy allocation, recurring bills tracking, and personalized themes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
