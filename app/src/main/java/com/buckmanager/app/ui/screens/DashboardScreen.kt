@@ -918,6 +918,10 @@ fun DashboardScreen(
                 } else {
                     viewModel.showNotice("Unable to open Play purchase UI.")
                 }
+            },
+            onEnableTestPremium = {
+                viewModel.setTestPremiumEnabled(true)
+                showPremiumModal = false
             }
         )
 

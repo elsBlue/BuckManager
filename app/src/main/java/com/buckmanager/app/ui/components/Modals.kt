@@ -646,7 +646,8 @@ fun SettingsModal(
     onOpenCustomizeWidget: () -> Unit = {},
     onCurrencyChanged: () -> Unit = {},
     onExportJson: (android.net.Uri) -> Unit = {},
-    onRestorePurchases: () -> Unit = {}
+    onRestorePurchases: () -> Unit = {},
+    onToggleTestPremium: (Boolean) -> Unit = {}
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     var showCurrencyModal by remember { mutableStateOf(false) }
@@ -945,6 +946,58 @@ fun SettingsModal(
                                     text = if (monetization.isPremium) "Tap to re-check this Play account" else "Already bought? Recover it here.",
                                     color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
                                     fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
+
+                    if (com.buckmanager.app.BuildConfig.DEBUG) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (isDarkMode) Color(0xFF1C1929) else Color(0xFFF4F5F9)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(GoldAccent.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Star,
+                                        contentDescription = "Test Premium",
+                                        tint = GoldAccent,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Test Premium",
+                                        color = if (isDarkMode) Color.White else Color(0xFF121926),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "Debug only. Unlock customization without Play Billing.",
+                                        color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
+                                        fontSize = 11.sp
+                                    )
+                                }
+                                Switch(
+                                    checked = monetization.isPremium,
+                                    onCheckedChange = onToggleTestPremium,
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = GoldAccent,
+                                        checkedTrackColor = GoldAccent.copy(alpha = 0.5f)
+                                    )
                                 )
                             }
                         }

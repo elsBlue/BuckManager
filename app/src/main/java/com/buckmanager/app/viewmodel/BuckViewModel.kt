@@ -248,6 +248,11 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
                 _isEditLocked.value = locked.toBoolean()
             }
 
+            // Debug APK (GitHub Actions) starts with premium so customization can be tested.
+            if (BuildConfig.DEBUG && settings["test_premium"] != "false") {
+                applyLifetimePremiumFromPlay()
+            }
+
 
 
             // User Email and Profile Pic
@@ -621,6 +626,22 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
         }
         billingManager.refreshPurchases(notifyIfMissing = true)
         _userNotice.value = "Checking Play purchases..."
+    }
+
+    fun setTestPremiumEnabled(enabled: Boolean) {
+        if (!BuildConfig.DEBUG) return
+        viewModelScope.launch(Dispatchers.IO) {
+            saveSetting("test_premium", enabled.toString())
+            if (enabled) {
+                applyLifetimePremiumFromPlay()
+                _userNotice.value = "Test Premium on. Tap the gold lock, then a card to customize."
+            } else {
+                updateMonetization(_monetization.value.copy(isPremium = false, premiumExpiryDate = 0L, adTickets = 0))
+                _isEditLocked.value = true
+                saveSetting("edit_locked", "true")
+                _userNotice.value = "Test Premium off."
+            }
+        }
     }
 
     fun continueLocally() {

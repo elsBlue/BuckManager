@@ -24,7 +24,8 @@ fun PremiumModal(
     purchasePriceLabel: String? = null,
     onDismiss: () -> Unit,
     onPurchase: () -> Unit,
-    onRestorePurchases: () -> Unit = {}
+    onRestorePurchases: () -> Unit = {},
+    onEnableTestPremium: () -> Unit = {}
 ) {
     if (!visible) return
 
@@ -100,6 +101,12 @@ fun PremiumModal(
 
                     TextButton(onClick = onRestorePurchases) {
                         Text("Restore purchases", color = goldColor, fontWeight = FontWeight.Bold)
+                    }
+
+                    if (com.buckmanager.app.BuildConfig.DEBUG) {
+                        TextButton(onClick = onEnableTestPremium) {
+                            Text("Use Test Premium", color = goldColor, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
