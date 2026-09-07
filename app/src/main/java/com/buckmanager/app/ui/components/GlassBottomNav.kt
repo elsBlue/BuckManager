@@ -2,13 +2,16 @@ package com.buckmanager.app.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -17,7 +20,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,60 +63,91 @@ fun GlassBottomNav(
 
     Box(
         modifier = modifier
-            .height(58.dp)
-            .shadow(12.dp, shape, ambientColor = Color.Black.copy(alpha = 0.18f), spotColor = Color.Black.copy(alpha = 0.18f))
-            .clip(shape)
-            .background(frost)
-            .border(AppStroke.thin, stroke, shape)
-            .padding(horizontal = 10.dp),
-        contentAlignment = Alignment.Center
+            .fillMaxWidth()
+            .height(78.dp),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(58.dp)
+                .shadow(12.dp, shape, ambientColor = Color.Black.copy(alpha = 0.18f), spotColor = Color.Black.copy(alpha = 0.18f))
+                .clip(shape)
+                .background(frost)
+                .border(AppStroke.thin, stroke, shape)
         ) {
-            NavIcon(
-                selected = currentRoute == "dashboard",
-                selectedIcon = Icons.Filled.Home,
-                idleIcon = Icons.Outlined.Home,
-                label = "Dashboard",
-                activeTint = activeTint,
-                idleTint = idleTint,
-                onClick = onDashboard
-            )
-            NavIcon(
-                selected = currentRoute == "transactions",
-                selectedIcon = Icons.Filled.History,
-                idleIcon = Icons.Filled.History,
-                label = "Transactions",
-                activeTint = activeTint,
-                idleTint = idleTint,
-                onClick = onTransactions
-            )
-            IconButton(
-                onClick = onAdd,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(AppShape.chip))
-                    .background(Color(0xFFFCBF36))
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add transaction",
-                    tint = Color.White,
-                    modifier = Modifier.size(22.dp)
+                NavIcon(
+                    selected = currentRoute == "dashboard",
+                    selectedIcon = Icons.Filled.Home,
+                    idleIcon = Icons.Outlined.Home,
+                    label = "Dashboard",
+                    activeTint = activeTint,
+                    idleTint = idleTint,
+                    onClick = onDashboard,
+                    modifier = Modifier.weight(1f)
+                )
+                NavIcon(
+                    selected = currentRoute == "transactions",
+                    selectedIcon = Icons.Filled.History,
+                    idleIcon = Icons.Filled.History,
+                    label = "Transactions",
+                    activeTint = activeTint,
+                    idleTint = idleTint,
+                    onClick = onTransactions,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                NavIcon(
+                    selected = false,
+                    selectedIcon = Icons.Default.Menu,
+                    idleIcon = Icons.Default.Menu,
+                    label = "Menu",
+                    activeTint = activeTint,
+                    idleTint = idleTint,
+                    onClick = onSettings,
+                    modifier = Modifier.weight(1f)
                 )
             }
-            NavIcon(
-                selected = false,
-                selectedIcon = Icons.Default.Menu,
-                idleIcon = Icons.Default.Menu,
-                label = "Menu",
-                activeTint = activeTint,
-                idleTint = idleTint,
-                onClick = onSettings
-            )
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .height(56.dp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+                Spacer(modifier = Modifier.weight(2f))
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .offset(y = 2.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .shadow(10.dp, CircleShape, ambientColor = Color(0xFFFCBF36).copy(alpha = 0.35f), spotColor = Color(0xFFFCBF36).copy(alpha = 0.4f))
+                            .clip(CircleShape)
+                            .background(Color(0xFFFCBF36))
+                            .clickable(onClick = onAdd),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add transaction",
+                            tint = Color.White,
+                            modifier = Modifier.size(26.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
+            }
         }
     }
 }
@@ -140,10 +173,16 @@ private fun NavIcon(
     label: String,
     activeTint: Color,
     idleTint: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val tint = if (selected) activeTint else idleTint
-    IconButton(onClick = onClick, modifier = Modifier.size(44.dp)) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
         Icon(
             imageVector = if (selected) selectedIcon else idleIcon,
             contentDescription = label,
