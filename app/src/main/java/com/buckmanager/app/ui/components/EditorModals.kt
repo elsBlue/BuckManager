@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -71,7 +72,7 @@ fun CompactSlider(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, fontSize = 10.sp, color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), modifier = Modifier.width(50.dp))
+        Text(label, fontSize = 11.sp, color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), modifier = Modifier.width(52.dp))
         Slider(
             value = value,
             onValueChange = onValueChange,
@@ -80,6 +81,126 @@ fun CompactSlider(
             colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent)
         )
         Text("${value.toInt()}$unit", fontSize = 10.sp, color = GoldAccent, fontWeight = FontWeight.Bold, modifier = Modifier.width(36.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End)
+    }
+}
+
+@Composable
+fun LinkedInsetControl(
+    title: String,
+    topStart: Int,
+    topEnd: Int,
+    bottomEnd: Int,
+    bottomStart: Int,
+    onChange: (Int, Int, Int, Int) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>,
+    unit: String = "",
+    eachLabel: String,
+    isDarkMode: Boolean
+) {
+    val muted = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)
+    val textColor = if (isDarkMode) Color.White else Color(0xFF0F172A)
+    val allSame = topStart == topEnd && topEnd == bottomEnd && bottomEnd == bottomStart
+    var editEach by remember { mutableStateOf(!allSame) }
+    val shared = if (allSame) topStart else ((topStart + topEnd + bottomEnd + bottomStart) / 4)
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(title, color = textColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            Text(
+                text = if (editEach) "Use one value" else eachLabel,
+                color = GoldAccent,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clickable { editEach = !editEach }
+            )
+        }
+        if (!editEach) {
+            CompactSlider(
+                label = "All",
+                value = shared.toFloat(),
+                onValueChange = {
+                    val v = it.toInt()
+                    onChange(v, v, v, v)
+                },
+                valueRange = valueRange,
+                unit = unit,
+                isDarkMode = isDarkMode
+            )
+        } else {
+            CompactSlider(label = "Top L", value = topStart.toFloat(), onValueChange = { onChange(it.toInt(), topEnd, bottomEnd, bottomStart) }, valueRange = valueRange, unit = unit, isDarkMode = isDarkMode)
+            CompactSlider(label = "Top R", value = topEnd.toFloat(), onValueChange = { onChange(topStart, it.toInt(), bottomEnd, bottomStart) }, valueRange = valueRange, unit = unit, isDarkMode = isDarkMode)
+            CompactSlider(label = "Bot L", value = bottomStart.toFloat(), onValueChange = { onChange(topStart, topEnd, bottomEnd, it.toInt()) }, valueRange = valueRange, unit = unit, isDarkMode = isDarkMode)
+            CompactSlider(label = "Bot R", value = bottomEnd.toFloat(), onValueChange = { onChange(topStart, topEnd, it.toInt(), bottomStart) }, valueRange = valueRange, unit = unit, isDarkMode = isDarkMode)
+        }
+        if (!editEach) {
+            Text("Tip: $eachLabel if you want a ticket / speech-bubble shape.", color = muted, fontSize = 11.sp)
+        }
+    }
+}
+
+@Composable
+fun QuickLooksRow(
+    selectedBg: String,
+    isDarkMode: Boolean,
+    onApply: (bg: String, label: String, value: String, radius: Int, padding: Int, gradient: Boolean, g1: String, g2: String, border: Int, borderColor: String) -> Unit
+) {
+    data class Look(
+        val name: String,
+        val bg: String,
+        val label: String,
+        val value: String,
+        val radius: Int,
+        val padding: Int,
+        val gradient: Boolean = false,
+        val g1: String = bg,
+        val g2: String = bg,
+        val border: Int = 0,
+        val borderColor: String = "#E2E8F0"
+    )
+    val looks = listOf(
+        Look("Soft blue", "#3673FC", "#E8EEFF", "#FFFFFF", 24, 20),
+        Look("Ink", "#0F172A", "#94A3B8", "#FFFFFF", 20, 20),
+        Look("Gold", "#1A1408", "#FCBF36", "#FFFFFF", 28, 22, border = 1, borderColor = "#FCBF36"),
+        Look("Glass", "#FFFFFF", "#64748B", "#0F172A", 24, 20, border = 1, borderColor = "#E2E8F0"),
+        Look("Sunset", "#3673FC", "#FFFFFF", "#FFFFFF", 24, 20, gradient = true, g1 = "#3673FC", g2 = "#FCBF36")
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Quick looks", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            items(looks) { look ->
+                val selected = !look.gradient && selectedBg.equals(look.bg, ignoreCase = true)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .width(64.dp)
+                        .clickable {
+                            onApply(look.bg, look.label, look.value, look.radius, look.padding, look.gradient, look.g1, look.g2, look.border, look.borderColor)
+                        }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .then(
+                                if (look.gradient) Modifier.background(
+                                    Brush.linearGradient(listOf(parseHexColor(look.g1), parseHexColor(look.g2)))
+                                ) else Modifier.background(parseHexColor(look.bg))
+                            )
+                            .border(
+                                2.dp,
+                                if (selected) GoldAccent else Color.Transparent,
+                                RoundedCornerShape(14.dp)
+                            )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(look.name, fontSize = 10.sp, color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), maxLines = 1)
+                }
+            }
+        }
     }
 }
 
@@ -903,7 +1024,13 @@ fun HeaderCardEditorModal(
     var dimOpacity by remember(cardKey) { mutableFloatStateOf(currentConfig.dimOpacity.toFloat()) }
 
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Color", "Icon/Data", "Layout")
+    val tabs = listOf("Look", "Photo", "Shape")
+    val cardTitle = when (cardKey) {
+        "netWorth" -> "Net Worth"
+        "income" -> "Income"
+        "expense" -> "Expense"
+        else -> "Card"
+    }
 
     // Image Crop modal state
     var croppingImageUri by remember { mutableStateOf<String?>(null) }
@@ -947,7 +1074,7 @@ fun HeaderCardEditorModal(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Customize ${cardKey.replaceFirstChar { it.uppercase() }} Card",
+                    text = "Customize $cardTitle",
                     color = textColor,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
@@ -1006,7 +1133,12 @@ fun HeaderCardEditorModal(
 
                     Column(modifier = Modifier.padding(start = paddingLeft.dp, top = paddingTop.dp, end = paddingRight.dp, bottom = paddingBottom.dp)) {
                         Text(
-                            text = cardKey.uppercase(),
+                            text = when (cardKey) {
+                                "netWorth" -> "NET WORTH"
+                                "income" -> "INCOME"
+                                "expense" -> "EXPENSE"
+                                else -> cardKey.uppercase()
+                            },
                             color = parseHexColor(labelColor, Color.White),
                             fontWeight = FontWeight.Bold,
                             fontSize = 11.sp,
@@ -1049,13 +1181,35 @@ fun HeaderCardEditorModal(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                if (selectedTab == 0) { // Color
+                if (selectedTab == 0) { // Look
+                    QuickLooksRow(
+                        selectedBg = selectedBg,
+                        isDarkMode = isDarkMode
+                    ) { bg, label, value, radius, padding, gradient, g1, g2, border, borderColor ->
+                        selectedBg = bg
+                        labelColor = label
+                        valueColor = value
+                        radiusTopLeft = radius
+                        radiusTopRight = radius
+                        radiusBottomRight = radius
+                        radiusBottomLeft = radius
+                        paddingTop = padding
+                        paddingRight = padding
+                        paddingBottom = padding
+                        paddingLeft = padding
+                        useGradient = gradient
+                        gradColor1 = g1
+                        gradColor2 = g2
+                        borderWidth = border
+                        borderColorHex = borderColor
+                    }
+                    HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Use Gradient Background", color = textColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Gradient fill", color = textColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Switch(
                             checked = useGradient,
                             onCheckedChange = { useGradient = it },
@@ -1063,25 +1217,22 @@ fun HeaderCardEditorModal(
                         )
                     }
                     if (useGradient) {
-                        RichColorPicker(title = "Gradient Color 1", selectedColorHex = gradColor1, onColorSelected = { gradColor1 = it }, isDarkMode = isDarkMode)
-                        RichColorPicker(title = "Gradient Color 2", selectedColorHex = gradColor2, onColorSelected = { gradColor2 = it }, isDarkMode = isDarkMode)
+                        RichColorPicker(title = "From", selectedColorHex = gradColor1, onColorSelected = { gradColor1 = it }, isDarkMode = isDarkMode)
+                        RichColorPicker(title = "To", selectedColorHex = gradColor2, onColorSelected = { gradColor2 = it }, isDarkMode = isDarkMode)
                         Column {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("Gradient Angle", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Text("${gradientAngle.toInt()}°", color = GoldAccent, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                Text("Angle", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("${gradientAngle.toInt()}°", color = GoldAccent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                             Slider(value = gradientAngle, onValueChange = { gradientAngle = it }, valueRange = 0f..360f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
                         }
                     } else {
-                        RichColorPicker(title = "Card Background Color", selectedColorHex = selectedBg, onColorSelected = { selectedBg = it }, isDarkMode = isDarkMode)
+                        RichColorPicker(title = "Card color", selectedColorHex = selectedBg, onColorSelected = { selectedBg = it }, isDarkMode = isDarkMode)
                     }
                     HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
-                    RichColorPicker(title = "Label Color", selectedColorHex = labelColor, onColorSelected = { labelColor = it }, isDarkMode = isDarkMode)
-                    HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
-                    RichColorPicker(title = "Value Amount Color", selectedColorHex = valueColor, onColorSelected = { valueColor = it }, isDarkMode = isDarkMode)
-                    HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
-                    RichColorPicker(title = "Border Color", selectedColorHex = borderColorHex, onColorSelected = { borderColorHex = it }, isDarkMode = isDarkMode)
-                } else if (selectedTab == 1) { // Icon/Data
+                    RichColorPicker(title = "Label", selectedColorHex = labelColor, onColorSelected = { labelColor = it }, isDarkMode = isDarkMode)
+                    RichColorPicker(title = "Amount", selectedColorHex = valueColor, onColorSelected = { valueColor = it }, isDarkMode = isDarkMode)
+                } else if (selectedTab == 1) { // Photo
                     Text("Background Image & Crop", color = if (isDarkMode) Color.White else Color(0xFF0F172A), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1119,23 +1270,33 @@ fun HeaderCardEditorModal(
                         }
                     }
 
-                    OutlinedTextField(
-                        value = bgUri,
-                        onValueChange = { bgUri = it },
-                        label = { Text("Image URL or Path", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = GoldAccent,
-                            unfocusedBorderColor = if (isDarkMode) Color(0xFF2A273C) else Color(0xFFCBD5E1),
-                            focusedContainerColor = if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF1F5F9),
-                            unfocusedContainerColor = if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF1F5F9),
-                            focusedTextColor = if (isDarkMode) Color.White else Color(0xFF0F172A),
-                            unfocusedTextColor = if (isDarkMode) Color.White else Color(0xFF0F172A)
-                        )
+                    var showImageLink by remember { mutableStateOf(false) }
+                    Text(
+                        text = if (showImageLink) "Hide image link" else "Paste image link",
+                        color = GoldAccent,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clickable { showImageLink = !showImageLink }
                     )
+                    if (showImageLink) {
+                        OutlinedTextField(
+                            value = bgUri,
+                            onValueChange = { bgUri = it },
+                            label = { Text("Image link", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = GoldAccent,
+                                unfocusedBorderColor = if (isDarkMode) Color(0xFF2A273C) else Color(0xFFCBD5E1),
+                                focusedContainerColor = if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF1F5F9),
+                                unfocusedContainerColor = if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF1F5F9),
+                                focusedTextColor = if (isDarkMode) Color.White else Color(0xFF0F172A),
+                                unfocusedTextColor = if (isDarkMode) Color.White else Color(0xFF0F172A)
+                            )
+                        )
+                    }
 
-                    Text("Sample Wallpapers", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 11.sp)
+                    Text("Sample photos", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 12.sp)
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(PresetBackgroundImages) { url ->
                             Box(
@@ -1164,8 +1325,8 @@ fun HeaderCardEditorModal(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Darken / Dim Level", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 11.sp)
-                            Text("${dimOpacity.toInt()}%", color = GoldAccent, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text("Darken photo", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 12.sp)
+                            Text("${dimOpacity.toInt()}%", color = GoldAccent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                         Slider(
                             value = dimOpacity,
@@ -1174,22 +1335,43 @@ fun HeaderCardEditorModal(
                             colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent)
                         )
                     }
-                } else if (selectedTab == 2) { // Layout
-                    Text("Corner Radius", color = textColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    CompactSlider(label = "Top-L", value = radiusTopLeft.toFloat(), onValueChange = { radiusTopLeft = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                    CompactSlider(label = "Top-R", value = radiusTopRight.toFloat(), onValueChange = { radiusTopRight = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                    CompactSlider(label = "Bot-L", value = radiusBottomLeft.toFloat(), onValueChange = { radiusBottomLeft = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                    CompactSlider(label = "Bot-R", value = radiusBottomRight.toFloat(), onValueChange = { radiusBottomRight = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-
+                } else if (selectedTab == 2) { // Shape
+                    LinkedInsetControl(
+                        title = "Roundness",
+                        topStart = radiusTopLeft,
+                        topEnd = radiusTopRight,
+                        bottomEnd = radiusBottomRight,
+                        bottomStart = radiusBottomLeft,
+                        onChange = { tl, tr, br, bl ->
+                            radiusTopLeft = tl
+                            radiusTopRight = tr
+                            radiusBottomRight = br
+                            radiusBottomLeft = bl
+                        },
+                        valueRange = 0f..40f,
+                        eachLabel = "Each corner",
+                        isDarkMode = isDarkMode
+                    )
                     HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
                     CompactSlider(label = "Border", value = borderWidth.toFloat(), onValueChange = { borderWidth = it.toInt() }, valueRange = 0f..10f, isDarkMode = isDarkMode)
-
+                    RichColorPicker(title = "Border color", selectedColorHex = borderColorHex, onColorSelected = { borderColorHex = it }, isDarkMode = isDarkMode)
                     HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
-                    Text("Inner Padding", color = textColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    CompactSlider(label = "Top", value = paddingTop.toFloat(), onValueChange = { paddingTop = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                    CompactSlider(label = "Right", value = paddingRight.toFloat(), onValueChange = { paddingRight = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                    CompactSlider(label = "Bottom", value = paddingBottom.toFloat(), onValueChange = { paddingBottom = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                    CompactSlider(label = "Left", value = paddingLeft.toFloat(), onValueChange = { paddingLeft = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
+                    LinkedInsetControl(
+                        title = "Padding",
+                        topStart = paddingTop,
+                        topEnd = paddingRight,
+                        bottomEnd = paddingBottom,
+                        bottomStart = paddingLeft,
+                        onChange = { t, r, b, l ->
+                            paddingTop = t
+                            paddingRight = r
+                            paddingBottom = b
+                            paddingLeft = l
+                        },
+                        valueRange = 0f..40f,
+                        eachLabel = "Each side",
+                        isDarkMode = isDarkMode
+                    )
                 }
             }
 
@@ -1228,7 +1410,7 @@ fun HeaderCardEditorModal(
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF9CA3AF)),
                     border = BorderStroke(1.dp, Color(0xFF2A273C))
                 ) {
-                    Text("RESET TO DEFAULT", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("Reset", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
 
                 Button(
@@ -1265,7 +1447,7 @@ fun HeaderCardEditorModal(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = GoldAccent)
                 ) {
-                    Text("SAVE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text("Save look", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 }
             }
         }
@@ -1337,7 +1519,7 @@ fun EnvelopeEditorModal(
     )
 
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Amount/Icon", "Colors", "Layout")
+    val tabs = listOf("Envelope", "Look", "Shape")
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
@@ -1516,12 +1698,34 @@ fun EnvelopeEditorModal(
                             }
                         }
                     } else if (selectedTab == 1) {
+                        QuickLooksRow(
+                            selectedBg = bgHex,
+                            isDarkMode = isDarkMode
+                        ) { bg, label, value, radius, padding, gradient, g1, g2, border, borderColor ->
+                            bgHex = bg
+                            colorHex = label
+                            valueColorHex = value
+                            radiusTopLeft = radius
+                            radiusTopRight = radius
+                            radiusBottomRight = radius
+                            radiusBottomLeft = radius
+                            paddingTop = padding
+                            paddingRight = padding
+                            paddingBottom = padding
+                            paddingLeft = padding
+                            useGradient = gradient
+                            gradColor1 = g1
+                            gradColor2 = g2
+                            borderWidth = border
+                            borderColorHex = borderColor
+                        }
+                        HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Use Gradient Background", color = textColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Gradient fill", color = textColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             Switch(
                                 checked = useGradient,
                                 onCheckedChange = { useGradient = it },
@@ -1662,21 +1866,41 @@ fun EnvelopeEditorModal(
                             )
                         }
                     } else if (selectedTab == 2) {
-                        Text("Corner Radius", color = textColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        CompactSlider(label = "Top-L", value = radiusTopLeft.toFloat(), onValueChange = { radiusTopLeft = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                        CompactSlider(label = "Top-R", value = radiusTopRight.toFloat(), onValueChange = { radiusTopRight = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                        CompactSlider(label = "Bot-L", value = radiusBottomLeft.toFloat(), onValueChange = { radiusBottomLeft = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                        CompactSlider(label = "Bot-R", value = radiusBottomRight.toFloat(), onValueChange = { radiusBottomRight = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-
+                        LinkedInsetControl(
+                            title = "Roundness",
+                            topStart = radiusTopLeft,
+                            topEnd = radiusTopRight,
+                            bottomEnd = radiusBottomRight,
+                            bottomStart = radiusBottomLeft,
+                            onChange = { tl, tr, br, bl ->
+                                radiusTopLeft = tl
+                                radiusTopRight = tr
+                                radiusBottomRight = br
+                                radiusBottomLeft = bl
+                            },
+                            valueRange = 0f..40f,
+                            eachLabel = "Each corner",
+                            isDarkMode = isDarkMode
+                        )
                         HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
                         CompactSlider(label = "Border", value = borderWidth.toFloat(), onValueChange = { borderWidth = it.toInt() }, valueRange = 0f..10f, isDarkMode = isDarkMode)
-
                         HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
-                        Text("Inner Padding", color = textColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        CompactSlider(label = "Top", value = paddingTop.toFloat(), onValueChange = { paddingTop = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                        CompactSlider(label = "Right", value = paddingRight.toFloat(), onValueChange = { paddingRight = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                        CompactSlider(label = "Bottom", value = paddingBottom.toFloat(), onValueChange = { paddingBottom = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
-                        CompactSlider(label = "Left", value = paddingLeft.toFloat(), onValueChange = { paddingLeft = it.toInt() }, valueRange = 0f..40f, isDarkMode = isDarkMode)
+                        LinkedInsetControl(
+                            title = "Padding",
+                            topStart = paddingTop,
+                            topEnd = paddingRight,
+                            bottomEnd = paddingBottom,
+                            bottomStart = paddingLeft,
+                            onChange = { t, r, b, l ->
+                                paddingTop = t
+                                paddingRight = r
+                                paddingBottom = b
+                                paddingLeft = l
+                            },
+                            valueRange = 0f..40f,
+                            eachLabel = "Each side",
+                            isDarkMode = isDarkMode
+                        )
                     }
                 }
             }
@@ -1699,7 +1923,7 @@ fun EnvelopeEditorModal(
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("DELETE", fontWeight = FontWeight.Bold)
+                        Text("Delete", fontWeight = FontWeight.Bold)
                     }
                 }
                 Button(
@@ -1737,7 +1961,7 @@ fun EnvelopeEditorModal(
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = GoldAccent)
                 ) {
-                    Text("SAVE", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Save", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -1788,7 +2012,7 @@ fun AddEnvelopeModal(
     var borderColorHex by remember { mutableStateOf("#CBD5E1") }
 
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Amount/Icon", "Colors", "Layout")
+    val tabs = listOf("Envelope", "Look", "Shape")
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
@@ -1986,73 +2210,47 @@ fun AddEnvelopeModal(
                             isDarkMode = isDarkMode
                         )
                     } else if (selectedTab == 2) {
-                    Text("Corner Radius", color = textColor, fontWeight = FontWeight.Bold)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("TL: ${radiusTopLeft}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = radiusTopLeft.toFloat(), onValueChange = { radiusTopLeft = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("TR: ${radiusTopRight}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = radiusTopRight.toFloat(), onValueChange = { radiusTopRight = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("BL: ${radiusBottomLeft}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = radiusBottomLeft.toFloat(), onValueChange = { radiusBottomLeft = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("BR: ${radiusBottomRight}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = radiusBottomRight.toFloat(), onValueChange = { radiusBottomRight = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                    }
-
+                    LinkedInsetControl(
+                        title = "Roundness",
+                        topStart = radiusTopLeft,
+                        topEnd = radiusTopRight,
+                        bottomEnd = radiusBottomRight,
+                        bottomStart = radiusBottomLeft,
+                        onChange = { tl, tr, br, bl ->
+                            radiusTopLeft = tl
+                            radiusTopRight = tr
+                            radiusBottomRight = br
+                            radiusBottomLeft = bl
+                        },
+                        valueRange = 0f..40f,
+                        eachLabel = "Each corner",
+                        isDarkMode = isDarkMode
+                    )
                     HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
-                    Text("Border Width", color = textColor, fontWeight = FontWeight.Bold)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Top: ${borderTop}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = borderTop.toFloat(), onValueChange = { borderTop = it.toInt() }, valueRange = 0f..10f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Right: ${borderRight}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = borderRight.toFloat(), onValueChange = { borderRight = it.toInt() }, valueRange = 0f..10f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Bottom: ${borderBottom}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = borderBottom.toFloat(), onValueChange = { borderBottom = it.toInt() }, valueRange = 0f..10f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Left: ${borderLeft}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = borderLeft.toFloat(), onValueChange = { borderLeft = it.toInt() }, valueRange = 0f..10f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                    }
-
+                    CompactSlider(label = "Border", value = borderTop.toFloat(), onValueChange = {
+                        val v = it.toInt()
+                        borderTop = v
+                        borderRight = v
+                        borderBottom = v
+                        borderLeft = v
+                    }, valueRange = 0f..10f, isDarkMode = isDarkMode)
                     HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
-                    Text("Inner Padding", color = textColor, fontWeight = FontWeight.Bold)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Top: ${paddingTop}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = paddingTop.toFloat(), onValueChange = { paddingTop = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Right: ${paddingRight}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = paddingRight.toFloat(), onValueChange = { paddingRight = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Bottom: ${paddingBottom}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = paddingBottom.toFloat(), onValueChange = { paddingBottom = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Left: ${paddingLeft}dp", fontSize = 10.sp, color = GoldAccent)
-                            Slider(value = paddingLeft.toFloat(), onValueChange = { paddingLeft = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                        }
-                    }
+                    LinkedInsetControl(
+                        title = "Padding",
+                        topStart = paddingTop,
+                        topEnd = paddingRight,
+                        bottomEnd = paddingBottom,
+                        bottomStart = paddingLeft,
+                        onChange = { t, r, b, l ->
+                            paddingTop = t
+                            paddingRight = r
+                            paddingBottom = b
+                            paddingLeft = l
+                        },
+                        valueRange = 0f..40f,
+                        eachLabel = "Each side",
+                        isDarkMode = isDarkMode
+                    )
                 }
             }
             }
@@ -2099,7 +2297,7 @@ fun AddEnvelopeModal(
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = GoldAccent)
                 ) {
-                    Text("ADD ENVELOPE", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Add envelope", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         }

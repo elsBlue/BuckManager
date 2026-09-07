@@ -3,7 +3,11 @@ package com.buckmanager.app.ui.components
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -40,6 +44,7 @@ fun RichColorPicker(
     var sat by remember(hsv) { mutableFloatStateOf(hsv[1]) }
     var value by remember(hsv) { mutableFloatStateOf(hsv[2]) }
     var alpha by remember(parsedColor) { mutableFloatStateOf(parsedColor.alpha) }
+    var showFineTune by remember { mutableStateOf(false) }
     
     fun updateColor() {
         val newColor = Color.hsv(hue, sat, value, alpha)
@@ -99,9 +104,46 @@ fun RichColorPicker(
 
     val currentColor = Color.hsv(hue, sat, value, alpha)
 
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (title.isNotEmpty()) {
-            Text(title, color = textColor, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(title, color = textColor, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Text(
+                    text = if (showFineTune) "Hide sliders" else "Fine-tune",
+                    color = Color(0xFFF59E0B),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.clickable { showFineTune = !showFineTune }
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ColorPresets.forEach { hex ->
+                val selected = selectedColorHex.equals(hex, ignoreCase = true)
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(parseHexColor(hex))
+                        .border(
+                            if (selected) 2.dp else 1.dp,
+                            if (selected) Color(0xFFF59E0B) else border,
+                            CircleShape
+                        )
+                        .clickable { onColorSelected(hex) }
+                )
+            }
         }
         
         Row(
@@ -111,16 +153,16 @@ fun RichColorPicker(
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(40.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.LightGray) // Alpha background
+                    .background(Color.LightGray)
                     .background(currentColor)
                     .border(1.dp, border, RoundedCornerShape(12.dp))
             )
             OutlinedTextField(
                 value = selectedColorHex,
                 onValueChange = { onColorSelected(it) },
-                label = { Text("Color Code", color = textColor.copy(alpha = 0.7f)) },
+                label = { Text("Hex", color = textColor.copy(alpha = 0.7f)) },
                 modifier = Modifier.weight(1f),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = textColor,
@@ -132,6 +174,7 @@ fun RichColorPicker(
             )
         }
 
+        if (showFineTune) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             HsvSlider(
                 label = "H",
@@ -177,6 +220,7 @@ fun RichColorPicker(
                 valueText = "${(alpha * 255).roundToInt()}",
                 baseColor = Color.LightGray
             )
+        }
         }
     }
 }
