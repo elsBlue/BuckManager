@@ -127,8 +127,6 @@ fun FundGoalEditorModal(
         }
     )
 
-    )
-
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
