@@ -50,16 +50,21 @@ fun GlassBottomNav(
     val activeTint = if (darkSurface) Color.White else Color(0xFF0F172A)
     val idleTint = activeTint.copy(alpha = 0.42f)
     val shape = RoundedCornerShape(AppShape.panel)
-    val frost = if (darkSurface) {
+    val frostFill = if (darkSurface) {
+        Color(0xFF12151C).copy(alpha = 0.78f)
+    } else {
+        Color.White.copy(alpha = 0.90f)
+    }
+    val frostSheen = if (darkSurface) {
         Brush.verticalGradient(
-            listOf(Color.White.copy(alpha = 0.18f), Color.White.copy(alpha = 0.07f))
+            listOf(Color.White.copy(alpha = 0.16f), Color.White.copy(alpha = 0.04f))
         )
     } else {
         Brush.verticalGradient(
-            listOf(Color.White.copy(alpha = 0.62f), Color.White.copy(alpha = 0.38f))
+            listOf(Color.White.copy(alpha = 0.55f), Color.White.copy(alpha = 0.18f))
         )
     }
-    val stroke = if (darkSurface) Color.White.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.7f)
+    val stroke = if (darkSurface) Color.White.copy(alpha = 0.22f) else Color.White.copy(alpha = 0.92f)
 
     Row(
         modifier = modifier
@@ -74,7 +79,8 @@ fun GlassBottomNav(
                 .fillMaxHeight()
                 .shadow(12.dp, shape, ambientColor = Color.Black.copy(alpha = 0.18f), spotColor = Color.Black.copy(alpha = 0.18f))
                 .clip(shape)
-                .background(frost)
+                .background(frostFill)
+                .background(frostSheen)
                 .border(AppStroke.thin, stroke, shape)
         ) {
             Row(
