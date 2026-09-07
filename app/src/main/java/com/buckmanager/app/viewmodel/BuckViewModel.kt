@@ -591,6 +591,10 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun previewBackground(config: GlobalBackgroundConfig) {
+        _globalBackground.value = config
+    }
+
     fun updateBackground(config: GlobalBackgroundConfig) {
         viewModelScope.launch(Dispatchers.IO) {
             markCustomized()

@@ -37,6 +37,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -588,6 +589,7 @@ fun BackgroundEditorModal(
     currentConfig: GlobalBackgroundConfig,
     isDarkMode: Boolean = true,
     onDismiss: () -> Unit,
+    onLiveChange: (GlobalBackgroundConfig) -> Unit = {},
     onSave: (GlobalBackgroundConfig) -> Unit
 ) {
     if (!visible) return
@@ -609,6 +611,20 @@ fun BackgroundEditorModal(
 
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Color", "Wallpaper", "Effect")
+
+    val draft = currentConfig.copy(
+        backgroundColorHex = selectedBg,
+        textColorHex = selectedTextColor,
+        appNameColorHex = appNameColorHex,
+        titleColorHex = titleColorHex,
+        budgetEnvelopesColorHex = budgetEnvelopesColorHex,
+        particleEffect = selectedEffect,
+        backgroundImageUri = bgUri.ifBlank { null },
+        dimOpacity = dimOpacity.toInt()
+    )
+    LaunchedEffect(selectedBg, selectedTextColor, appNameColorHex, titleColorHex, budgetEnvelopesColorHex, selectedEffect, bgUri, dimOpacity) {
+        onLiveChange(draft)
+    }
 
     // Image Crop modal state
     var croppingImageUri by remember { mutableStateOf<String?>(null) }
@@ -633,15 +649,19 @@ fun BackgroundEditorModal(
     )
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetHeight = LocalConfiguration.current.screenHeightDp.dp * 0.5f
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = sheetBg,
+        scrimColor = Color.Transparent,
         dragHandle = { BottomSheetDefaults.DragHandle() },
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(sheetHeight)
         ) {
             // Top Header Row
             Row(
@@ -673,70 +693,7 @@ fun BackgroundEditorModal(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // STICKY LIVE CANVAS PREVIEW
-            val previewText = parseHexColor(selectedTextColor, if (isDarkMode) Color.White else Color(0xFF0F172A))
-            val previewApp = parseHexColor(appNameColorHex, previewText)
-            val previewTitle = parseHexColor(titleColorHex, previewText)
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(148.dp)
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp),
-                shape = RoundedCornerShape(AppShape.panel),
-                color = parseHexColor(selectedBg, if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF6FAFD)),
-                border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f)),
-                shadowElevation = 0.dp
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (bgUri.isNotBlank()) {
-                        AsyncImage(
-                            model = bgUri,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black.copy(alpha = (dimOpacity / 100f).coerceIn(0f, 0.98f)))
-                        )
-                    }
-                    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF3673FC)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("B", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
-                            }
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text("BUCK MANAGER", color = previewApp.copy(alpha = 0.5f), fontWeight = FontWeight.ExtraBold, fontSize = 10.sp, letterSpacing = 0.8.sp)
-                                Text("Dashboard", color = previewTitle, fontWeight = FontWeight.Black, fontSize = 16.sp)
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(Color(0xFF3673FC))
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                        ) {
-                            Column {
-                                Text("NET WORTH", color = Color.White.copy(alpha = 0.8f), fontWeight = FontWeight.Bold, fontSize = 10.sp, letterSpacing = 1.sp)
-                                Text("Rp 12.500.000", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
-                            }
-                        }
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(8.dp))
 
             TabRow(
                 selectedTabIndex = selectedTab,
@@ -929,14 +886,15 @@ fun BackgroundEditorModal(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // BOTTOM ACTION BUTTONS
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp),
+                    .padding(bottom = 12.dp)
+                    .navigationBarsPadding(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
@@ -960,18 +918,7 @@ fun BackgroundEditorModal(
 
                 Button(
                     onClick = {
-                        onSave(
-                            currentConfig.copy(
-                                backgroundColorHex = selectedBg,
-                                textColorHex = selectedTextColor,
-                                appNameColorHex = appNameColorHex,
-                                titleColorHex = titleColorHex,
-                                budgetEnvelopesColorHex = budgetEnvelopesColorHex,
-                                particleEffect = selectedEffect,
-                                backgroundImageUri = bgUri.ifBlank { null },
-                                dimOpacity = dimOpacity.toInt()
-                            )
-                        )
+                        onSave(draft)
                         onDismiss()
                     },
                     modifier = Modifier.weight(1f).height(48.dp),

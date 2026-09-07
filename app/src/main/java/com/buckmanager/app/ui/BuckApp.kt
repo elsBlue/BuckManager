@@ -103,6 +103,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
         var editingHeaderCard by remember { mutableStateOf<String?>(null) }
         var showFundGoalEditor by remember { mutableStateOf(false) }
         var showBackgroundEditor by remember { mutableStateOf(false) }
+        var backgroundEditorOrigin by remember { mutableStateOf<com.buckmanager.app.model.GlobalBackgroundConfig?>(null) }
 
 
 
@@ -228,7 +229,10 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                             onAddEnvelopeClick = { showAddEnvelope = true },
                             onEditHeaderCard = { cardKey -> editingHeaderCard = cardKey },
                             onEditFundGoal = { showFundGoalEditor = true },
-                            onEditBackground = { showBackgroundEditor = true },
+                            onEditBackground = {
+                                backgroundEditorOrigin = viewModel.globalBackground.value
+                                showBackgroundEditor = true
+                            },
                             onAddIncome = {
                                 transactionSheetType = "income"
                                 showTransactionSheet = true
@@ -396,10 +400,19 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
 
             BackgroundEditorModal(
                 visible = showBackgroundEditor,
-                currentConfig = globalBg,
+                currentConfig = backgroundEditorOrigin ?: globalBg,
                 isDarkMode = isDarkMode,
-                onDismiss = { showBackgroundEditor = false },
-                onSave = { updated -> viewModel.updateBackground(updated) }
+                onLiveChange = { viewModel.previewBackground(it) },
+                onDismiss = {
+                    backgroundEditorOrigin?.let { viewModel.previewBackground(it) }
+                    showBackgroundEditor = false
+                    backgroundEditorOrigin = null
+                },
+                onSave = { updated ->
+                    viewModel.updateBackground(updated)
+                    showBackgroundEditor = false
+                    backgroundEditorOrigin = null
+                }
             )
 
             WidgetCustomizerModal(
