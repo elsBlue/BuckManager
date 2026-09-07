@@ -1,14 +1,11 @@
 package com.buckmanager.app.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
@@ -21,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.buckmanager.app.ui.GoldAccent
@@ -52,7 +48,7 @@ fun UniversalHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
+            .padding(top = 4.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -62,8 +58,8 @@ fun UniversalHeader(
         ) {
             Box(
                 modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(14.dp))
                     .background(Color(0xFF3673FC)),
                 contentAlignment = Alignment.Center
             ) {
@@ -71,18 +67,17 @@ fun UniversalHeader(
                     text = "B",
                     color = Color.White,
                     fontWeight = FontWeight.Black,
-                    fontSize = 24.sp
+                    fontSize = 20.sp
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "BUCK MANAGER",
                     color = appNameColor.copy(alpha = 0.5f),
                     fontWeight = FontWeight.ExtraBold,
-                    fontSize = 11.sp,
+                    fontSize = 10.sp,
                     letterSpacing = 1.sp,
-                    modifier = Modifier.offset(y = 4.dp),
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
@@ -90,10 +85,9 @@ fun UniversalHeader(
                     text = title,
                     color = titleDisplayColor,
                     fontWeight = FontWeight.Black,
-                    fontSize = 24.sp,
-                    modifier = Modifier.offset(y = (-4).dp),
+                    fontSize = 20.sp,
                     maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Clip
                 )
             }
         }
@@ -102,64 +96,55 @@ fun UniversalHeader(
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // Eye toggle for hide balances
             if (showHideBalances) {
                 IconButton(
                     onClick = onToggleHideBalances,
                     modifier = Modifier
-                        .size(46.dp)
-                        .clip(RoundedCornerShape(16.dp))
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(14.dp))
                         .background(buttonBg)
                 ) {
                     Icon(
                         imageVector = if (hideBalances) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = "Toggle Balance Visibility",
                         tint = if (hideBalances) Color(0xFF9CA3AF) else Color(0xFF3673FC),
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
             if (showUnlockCustomization) {
                 if (!hasPremium) {
-                    Surface(
+                    IconButton(
                         onClick = onPremiumClick,
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color.Transparent,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0)),
-                        modifier = Modifier.height(46.dp)
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(buttonBg)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxHeight().padding(horizontal = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFCBF36), modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Unlock\nCustomization",
-                                color = if (isDarkMode) Color.White else Color(0xFF0F172A),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Left,
-                                lineHeight = 12.sp
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Unlock customization",
+                            tint = Color(0xFFFCBF36),
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 } else {
                     IconButton(
                         onClick = onToggleLock,
                         modifier = Modifier
-                            .size(46.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(14.dp))
                             .background(buttonBg)
                     ) {
                         Icon(
                             imageVector = if (isEditLocked) Icons.Default.Lock else Icons.Default.LockOpen,
                             contentDescription = "Toggle Lock",
                             tint = Color(0xFFFCBF36),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -169,15 +154,15 @@ fun UniversalHeader(
                 IconButton(
                     onClick = onCustomizeClick,
                     modifier = Modifier
-                        .size(46.dp)
-                        .clip(RoundedCornerShape(16.dp))
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(14.dp))
                         .background(buttonBg)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Palette,
                         contentDescription = "Customize Background",
                         tint = GoldAccent,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

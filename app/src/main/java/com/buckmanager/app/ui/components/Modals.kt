@@ -693,7 +693,8 @@ fun SettingsModal(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 24.dp)
+                    .statusBarsPadding()
+                    .padding(start = 24.dp, end = 24.dp, top = 4.dp, bottom = 24.dp)
             ) {
                 // Drawer Header
                 Row(

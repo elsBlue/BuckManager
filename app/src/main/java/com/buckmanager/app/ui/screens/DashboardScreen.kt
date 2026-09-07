@@ -108,7 +108,7 @@ fun DashboardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
+            contentPadding = PaddingValues(top = 4.dp, bottom = 120.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
@@ -185,7 +185,7 @@ fun DashboardScreen(
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        text = if (hideBalances) currencySymbol + "â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" else formatRp(netWorth),
+                                        text = if (hideBalances) currencySymbol + "••••••••" else formatRp(netWorth),
                                         color = parseHexColor(netCard.valueColorHex, Color.White),
                                         fontWeight = FontWeight.Black,
                                         fontSize = 32.sp
@@ -306,7 +306,7 @@ fun DashboardScreen(
                                 }
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = if (hideBalances) "+" + currencySymbol + "â€¢â€¢â€¢â€¢â€¢" else "+${formatRp(totalIncome)}",
+                                    text = if (hideBalances) "+" + currencySymbol + "•••••" else "+${formatRp(totalIncome)}",
                                     color = parseHexColor(incCard.valueColorHex, Color(0xFF10B981)),
                                     fontWeight = FontWeight.Black,
                                     fontSize = 18.sp
@@ -398,12 +398,60 @@ fun DashboardScreen(
                                 }
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = if (hideBalances) "-" + currencySymbol + "â€¢â€¢â€¢â€¢â€¢" else "-${formatRp(totalExpense)}",
+                                    text = if (hideBalances) "-" + currencySymbol + "•••••" else "-${formatRp(totalExpense)}",
                                     color = parseHexColor(expCard.valueColorHex, Color(0xFFFB7185)),
                                     fontWeight = FontWeight.Black,
                                     fontSize = 18.sp
                                 )
 
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (transactions.isEmpty()) {
+                item {
+                    Surface(
+                        onClick = { showTransactionBottomSheet = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (isDarkMode) Color(0xFF1C1929) else Color.White,
+                        border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.45f))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(GoldAccent),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Add your first income",
+                                    color = if (isDarkMode) Color.White else Color(0xFF121926),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
+                                )
+                                Text(
+                                    text = "Paycheck, transfer, or cash in — envelopes fill after that.",
+                                    color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
+                                    fontSize = 12.sp
+                                )
                             }
                         }
                     }
@@ -542,30 +590,26 @@ fun DashboardScreen(
                             }
 
                             if (fundGoal.targetAmount <= 0.0) {
-                                // Progress Bar
-                                LinearProgressIndicator(
-                                    progress = { progressRatio },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(8.dp)
-                                        .clip(RoundedCornerShape(4.dp)),
-                                    color = labelColor,
-                                    trackColor = if (isDarkMode) Color.White.copy(alpha = 0.15f) else Color(0xFFF1F5F9)
+                                Text(
+                                    text = "Set a target when you are ready. For now, record income first.",
+                                    color = labelColor.copy(alpha = 0.85f),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium
                                 )
 
                                 Button(
                                     onClick = { onEditFundGoal() },
-                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                    modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.buttonColors(containerColor = parseHexColor(fundGoal.btnBgColorHex, labelColor)),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Text("SET A GOAL", color = parseHexColor(fundGoal.btnTextColorHex, Color.White), fontWeight = FontWeight.Bold)
+                                    Text("Set a goal", color = parseHexColor(fundGoal.btnTextColorHex, Color.White), fontWeight = FontWeight.Bold)
                                 }
                             } else {
                                 // Value Row
                                 Column {
                                     Text(
-                                        text = if (hideBalances) currencySymbol + "â€¢â€¢â€¢â€¢â€¢â€¢" else formatRp(fundGoal.currentAmount),
+                                        text = if (hideBalances) currencySymbol + "••••••" else formatRp(fundGoal.currentAmount),
                                         color = valueColor,
                                         fontWeight = FontWeight.Black,
                                         fontSize = 22.sp
@@ -582,7 +626,7 @@ fun DashboardScreen(
                                             fontWeight = FontWeight.Medium
                                         )
                                         Text(
-                                            text = if (remainingAmount <= 0) "ðŸŽ‰ Goal Reached!" else "Remaining: ${if (hideBalances) currencySymbol + "â€¢â€¢â€¢â€¢â€¢" else formatRp(remainingAmount)}",
+                                            text = if (remainingAmount <= 0) "Goal reached!" else "Remaining: ${if (hideBalances) currencySymbol + "•••••" else formatRp(remainingAmount)}",
                                             color = if (remainingAmount <= 0) Color(0xFF34D399) else labelColor,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.SemiBold
@@ -647,10 +691,10 @@ fun DashboardScreen(
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "ADD",
+                                text = "+ Envelope",
                                 color = Color(0xFFFCBF36),
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
+                                fontSize = 13.sp
                             )
                         }
                     }
@@ -670,7 +714,7 @@ fun DashboardScreen(
                                 .background(indicatorColor)
                         )
                         Text(
-                            text = if (bufferPct > 0) "Main (Buffer): $bufferPct%" else "100% Allocated (No Buffer)",
+                            text = if (bufferPct > 0) "Unassigned $bufferPct%" else "All income is assigned",
                             color = indicatorColor,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 11.sp
@@ -746,22 +790,26 @@ fun DashboardScreen(
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "${env.name.uppercase()} (${env.percentage}%)",
+                                    text = "${env.name} · ${env.percentage}%",
                                     color = parseHexColor(env.labelColorHex, Color(0xFF64748B)),
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 10.sp,
-                                    letterSpacing = 1.sp
+                                    fontSize = 11.sp,
+                                    letterSpacing = 0.2.sp
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = if (hideBalances) currencySymbol + "â€¢â€¢â€¢â€¢â€¢â€¢" else formatRp(stats.remaining),
+                                    text = if (hideBalances) "$currencySymbol••••••" else formatRp(stats.remaining),
                                     color = parseHexColor(env.valueColorHex, if (isDarkMode) Color.White else Color(0xFF0F172A)),
                                     fontWeight = FontWeight.Black,
                                     fontSize = 22.sp
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = if (env.id == "savings") "Secured funds. Do not touch!" else "Remaining from ${if (hideBalances) currencySymbol + "â€¢â€¢â€¢â€¢â€¢" else formatRp(stats.allocated)}",
+                                    text = when {
+                                        stats.allocated <= 0.0 -> "No money assigned yet"
+                                        env.id == "savings" -> "Secured funds. Do not touch!"
+                                        else -> "Left of ${if (hideBalances) "$currencySymbol•••••" else formatRp(stats.allocated)}"
+                                    },
                                     color = parseHexColor(env.descriptionColorHex, Color(0xFF9CA3AF)),
                                     fontSize = 11.sp
                                 )
