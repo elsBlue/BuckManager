@@ -31,7 +31,10 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.buckmanager.app.model.Envelope
 import com.buckmanager.app.model.AuthSession
+import com.buckmanager.app.model.filterAmountDigits
 import com.buckmanager.app.model.formatRp
+import com.buckmanager.app.model.parseAmountInput
+import com.buckmanager.app.ui.AmountVisualTransformation
 import com.buckmanager.app.ui.AppShape
 import com.buckmanager.app.ui.AppSpacing
 import com.buckmanager.app.ui.GoldAccent
@@ -47,8 +50,6 @@ import com.buckmanager.app.ui.components.getIconVector
 import com.buckmanager.app.ui.components.parseHexColor
 import com.buckmanager.app.viewmodel.BuckViewModel
 import com.buckmanager.app.widget.GoalAppWidgetProvider
-import java.text.NumberFormat
-import java.util.Locale
 
 
 
@@ -1028,9 +1029,10 @@ fun TransactionBottomSheet(
                 Text("AMOUNT (${com.buckmanager.app.model.CurrencyConfig.currencyCode})", color = textSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 OutlinedTextField(
                     value = amountText,
-                    onValueChange = { amountText = it.filter { c -> c.isDigit() } },
+                    onValueChange = { amountText = filterAmountDigits(it) },
                     placeholder = { Text("0", color = textSecondary) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    visualTransformation = AmountVisualTransformation,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(AppShape.button),
                     colors = appTextFieldColors(isDarkMode)
@@ -1096,14 +1098,14 @@ fun TransactionBottomSheet(
             // Submit Button
             Button(
                 onClick = {
-                    val amt = amountText.toDoubleOrNull() ?: 0.0
+                    val amt = parseAmountInput(amountText)
                     if (amt > 0 && amt <= 999_999_999_999.0) {
                         val cat = if (type == "expense") selectedCategory else "income"
                         viewModel.addTransaction(type, amt, cat, descriptionText)
                         onDismiss()
                     }
                 },
-                enabled = (amountText.toDoubleOrNull() ?: 0.0) > 0,
+                enabled = parseAmountInput(amountText) > 0,
                 modifier = Modifier.fillMaxWidth().height(AppSpacing.touchTarget),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (type == "expense") expenseColor else incomeColor

@@ -41,6 +41,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import coil.compose.AsyncImage
 import com.buckmanager.app.model.*
+import com.buckmanager.app.ui.AmountVisualTransformation
 import com.buckmanager.app.ui.AppChrome
 import com.buckmanager.app.ui.AppShape
 import com.buckmanager.app.ui.AppStroke
@@ -78,8 +79,8 @@ fun FundGoalEditorModal(
 
     var name by remember(currentConfig) { mutableStateOf(currentConfig.name) }
     val context = LocalContext.current
-    var target by remember(currentConfig) { mutableStateOf(currentConfig.targetAmount.toLong().toString()) }
-    var current by remember(currentConfig) { mutableStateOf(currentConfig.currentAmount.toLong().toString()) }
+    var target by remember(currentConfig) { mutableStateOf(filterAmountDigits(currentConfig.targetAmount.toLong().toString())) }
+    var current by remember(currentConfig) { mutableStateOf(filterAmountDigits(currentConfig.currentAmount.toLong().toString())) }
 
     var selectedBg by remember(currentConfig) { mutableStateOf(currentConfig.backgroundColorHex) }
     var radiusTopLeft by remember(currentConfig) { mutableIntStateOf(currentConfig.radiusTopLeft) }
@@ -169,8 +170,8 @@ fun FundGoalEditorModal(
             FundGoalLook(
                 config = currentConfig.copy(
                     name = name,
-                    targetAmount = target.toDoubleOrNull() ?: 0.0,
-                    currentAmount = current.toDoubleOrNull() ?: 0.0,
+                    targetAmount = parseAmountInput(target),
+                    currentAmount = parseAmountInput(current),
                     backgroundColorHex = selectedBg,
                     backgroundImageUri = bgUri.ifBlank { null },
                     dimOpacity = dimOpacity.toInt(),
@@ -237,18 +238,20 @@ fun FundGoalEditorModal(
                         )
                         OutlinedTextField(
                             value = target,
-                            onValueChange = { target = it.filter { c -> c.isDigit() } },
+                            onValueChange = { target = filterAmountDigits(it) },
                             label = { Text("Target Amount (Rp)", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            visualTransformation = AmountVisualTransformation,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(AppShape.button),
                             colors = appTextFieldColors(isDarkMode)
                         )
                         OutlinedTextField(
                             value = current,
-                            onValueChange = { current = it.filter { c -> c.isDigit() } },
+                            onValueChange = { current = filterAmountDigits(it) },
                             label = { Text("Current Saved Amount (Rp)", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            visualTransformation = AmountVisualTransformation,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(AppShape.button),
                             colors = appTextFieldColors(isDarkMode)
@@ -479,8 +482,8 @@ fun FundGoalEditorModal(
                 OutlinedButton(
                     onClick = {
                         name = currentConfig.name
-                        target = currentConfig.targetAmount.toLong().toString()
-                        current = currentConfig.currentAmount.toLong().toString()
+                        target = filterAmountDigits(currentConfig.targetAmount.toLong().toString())
+                        current = filterAmountDigits(currentConfig.currentAmount.toLong().toString())
                         selectedBg = currentConfig.backgroundColorHex
                         radiusTopLeft = currentConfig.radiusTopLeft
                         radiusTopRight = currentConfig.radiusTopRight
@@ -518,8 +521,8 @@ fun FundGoalEditorModal(
                         onSave(
                             FundGoalConfig(
                                 name = name.ifBlank { "Set a Goal" },
-                                targetAmount = target.toDoubleOrNull() ?: 0.0,
-                                currentAmount = current.toDoubleOrNull() ?: 0.0,
+                                targetAmount = parseAmountInput(target),
+                                currentAmount = parseAmountInput(current),
                                 backgroundColorHex = selectedBg,
                                 backgroundImageUri = bgUri.ifBlank { null },
                                 dimOpacity = dimOpacity.toInt(),
@@ -1417,10 +1420,11 @@ fun GoalDepositModal(
 
                 OutlinedTextField(
                     value = amountText,
-                    onValueChange = { amountText = it.filter { c -> c.isDigit() } },
+                    onValueChange = { amountText = filterAmountDigits(it) },
                     label = { Text(if (isWithdraw) "Jumlah Penarikan (Rp)" else "Jumlah Setoran (Rp)", color = dialogSubtitleColor) },
-                    placeholder = { Text("Contoh: 100000", color = dialogSubtitleColor.copy(alpha = 0.5f)) },
+                    placeholder = { Text("Contoh: 100.000", color = dialogSubtitleColor.copy(alpha = 0.5f)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    visualTransformation = AmountVisualTransformation,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(AppShape.button),
                     colors = appTextFieldColors(isDarkMode)
@@ -1451,7 +1455,7 @@ fun GoalDepositModal(
         confirmButton = {
             Button(
                 onClick = {
-                    val amt = amountText.toDoubleOrNull() ?: 0.0
+                    val amt = parseAmountInput(amountText)
                     if (amt > 0) {
                         val finalAmt = if (isWithdraw) -amt else amt
                         onConfirmDeposit(finalAmt)
