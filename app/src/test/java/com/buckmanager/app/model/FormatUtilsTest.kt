@@ -1,5 +1,6 @@
 package com.buckmanager.app.model
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -23,5 +24,23 @@ class FormatUtilsTest {
     fun formatRp_negativeUsesMinusPrefix() {
         val formatted = formatRp(-2500.0)
         assertTrue(formatted.startsWith("-Rp"))
+    }
+
+    @Test
+    fun formatGroupedDigits_idrUsesDots() {
+        assertEquals("", formatGroupedDigits(""))
+        assertEquals("1", formatGroupedDigits("1"))
+        assertEquals("12", formatGroupedDigits("12"))
+        assertEquals("123", formatGroupedDigits("123"))
+        assertEquals("1.000", formatGroupedDigits("1000"))
+        assertEquals("10.000.000", formatGroupedDigits("10000000"))
+        assertEquals("10.000.000", formatGroupedDigits("10.000.000"))
+    }
+
+    @Test
+    fun parseAmountInput_stripsGrouping() {
+        assertEquals(0.0, parseAmountInput(""), 0.0)
+        assertEquals(10000000.0, parseAmountInput("10.000.000"), 0.0)
+        assertEquals(1000.0, parseAmountInput("1,000"), 0.0)
     }
 }
