@@ -150,7 +150,7 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 val name = fundGoal.name.ifBlank { "Target Savings" }
                 views.setTextViewText(R.id.widget_title, name)
                 views.setTextViewText(R.id.widget_current_amount, formatRp(fundGoal.currentAmount))
-                views.setTextViewText(R.id.widget_target_amount, formatRp(fundGoal.targetAmount))
+                views.setTextViewText(R.id.widget_target_amount, "Target ${formatRp(fundGoal.targetAmount)}")
 
                 fun parseOr(hex: String, fallback: Int): Int = try {
                     android.graphics.Color.parseColor(hex)
@@ -170,9 +170,7 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 views.setTextColor(R.id.widget_current_amount, currentColor)
                 views.setTextColor(R.id.widget_percentage, percentColor)
                 views.setTextColor(R.id.widget_target_amount, targetColor)
-                views.setTextColor(R.id.widget_target_label, targetColor)
                 views.setTextColor(R.id.widget_remaining, remainingColor)
-                views.setTextColor(R.id.widget_remaining_label, remainingColor)
                 views.setImageViewResource(R.id.widget_title_icon, goalIconRes(fundGoal.iconName))
                 views.setInt(R.id.widget_title_icon, "setColorFilter", iconColor)
 
@@ -184,11 +182,7 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 views.setTextViewText(R.id.widget_percentage, "${percentageInt}%")
                 views.setTextViewText(
                     R.id.widget_remaining,
-                    if (remainingAmount <= 0) "Reached" else formatRp(remainingAmount)
-                )
-                views.setTextViewText(
-                    R.id.widget_remaining_label,
-                    if (remainingAmount <= 0) "Goal" else "Remaining"
+                    if (remainingAmount <= 0) "Goal reached!" else "Remaining ${formatRp(remainingAmount)}"
                 )
                 views.setImageViewBitmap(R.id.widget_progress_image, progressBitmap(fillColor, trackColor, progressRatio.toFloat()))
 

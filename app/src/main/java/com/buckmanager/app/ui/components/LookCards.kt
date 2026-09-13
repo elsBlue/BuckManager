@@ -512,9 +512,9 @@ fun FundGoalLook(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Target: ${formatRp(config.targetAmount)}", color = targetColor, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Text("Target ${formatRp(config.targetAmount)}", color = targetColor, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                         Text(
-                            text = if (remainingAmount <= 0) "Goal reached!" else "Remaining: ${if (hideBalances) currencySymbol + "•••••" else formatRp(remainingAmount)}",
+                            text = if (remainingAmount <= 0) "Goal reached!" else "Remaining ${if (hideBalances) currencySymbol + "•••••" else formatRp(remainingAmount)}",
                             color = if (remainingAmount <= 0) Color(0xFF34D399) else remainingColor,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold
@@ -610,47 +610,32 @@ fun GoalWidgetLook(config: FundGoalConfig, modifier: Modifier = Modifier) {
             }
             Spacer(modifier = Modifier.height(12.dp))
             val remainingAmount = (config.targetAmount - config.currentAmount).coerceAtLeast(0.0)
+            Text(
+                text = formatRp(config.currentAmount),
+                color = currentColor,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
+            )
+            Spacer(modifier = Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = formatRp(config.currentAmount),
-                    color = currentColor,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = "Target ${formatRp(config.targetAmount)}",
+                    color = targetColor,
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f).padding(end = 8.dp)
+                )
+                Text(
+                    text = if (remainingAmount <= 0) "Goal reached!" else "Remaining ${formatRp(remainingAmount)}",
+                    color = remainingColor,
+                    fontSize = 12.sp,
                     maxLines = 1
                 )
-                Column(
-                    modifier = Modifier.weight(1f).padding(start = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("Target", color = targetColor, fontSize = 10.sp)
-                    Text(
-                        text = formatRp(config.targetAmount),
-                        color = targetColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                }
-                Column(
-                    modifier = Modifier.weight(1f).padding(start = 8.dp),
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = if (remainingAmount <= 0) "Goal" else "Remaining",
-                        color = remainingColor,
-                        fontSize = 10.sp
-                    )
-                    Text(
-                        text = if (remainingAmount <= 0) "Reached" else formatRp(remainingAmount),
-                        color = remainingColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                }
             }
             Spacer(modifier = Modifier.height(12.dp))
             LinearProgressIndicator(

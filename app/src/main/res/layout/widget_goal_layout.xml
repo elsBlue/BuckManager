@@ -59,80 +59,48 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/widget_current_amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Rp 0"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
             <LinearLayout
                 android:id="@+id/widget_amount_row"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="4dp"
                 android:orientation="horizontal"
-                android:gravity="bottom">
+                android:gravity="center_vertical">
 
                 <TextView
-                    android:id="@+id/widget_current_amount"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/widget_target_amount"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Rp 0"
-                    android:textColor="#FFFFFF"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Target Rp 0"
+                    android:textColor="#8B92A5"
+                    android:textSize="12sp"
                     android:maxLines="1"
                     android:ellipsize="end" />
 
-                <LinearLayout
-                    android:layout_width="0dp"
+                <TextView
+                    android:id="@+id/widget_remaining"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:orientation="vertical"
-                    android:gravity="center_horizontal">
-
-                    <TextView
-                        android:id="@+id/widget_target_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Target"
-                        android:textColor="#8B92A5"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:id="@+id/widget_target_amount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Rp 0"
-                        android:textColor="#8B92A5"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:orientation="vertical"
-                    android:gravity="end">
-
-                    <TextView
-                        android:id="@+id/widget_remaining_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Remaining"
-                        android:textColor="#8B92A5"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:id="@+id/widget_remaining"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Rp 0"
-                        android:textColor="#D4A54A"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
-                </LinearLayout>
+                    android:text="Remaining Rp 0"
+                    android:textColor="#D4A54A"
+                    android:textSize="12sp"
+                    android:gravity="end"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
             </LinearLayout>
 
             <ImageView
