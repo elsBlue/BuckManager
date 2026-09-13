@@ -609,27 +609,49 @@ fun GoalWidgetLook(config: FundGoalConfig, modifier: Modifier = Modifier) {
                 Text(text = "$percentageInt%", color = percentColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+            val remainingAmount = (config.targetAmount - config.currentAmount).coerceAtLeast(0.0)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom
+            ) {
                 Text(
                     text = formatRp(config.currentAmount),
                     color = currentColor,
-                    fontSize = 24.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
+                    maxLines = 1
                 )
-                Text(
-                    text = "Target: ${formatRp(config.targetAmount)}",
-                    color = targetColor,
-                    fontSize = 12.sp
-                )
+                Column(
+                    modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Target", color = targetColor, fontSize = 10.sp)
+                    Text(
+                        text = formatRp(config.targetAmount),
+                        color = targetColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+                }
+                Column(
+                    modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = if (remainingAmount <= 0) "Goal" else "Remaining",
+                        color = remainingColor,
+                        fontSize = 10.sp
+                    )
+                    Text(
+                        text = if (remainingAmount <= 0) "Reached" else formatRp(remainingAmount),
+                        color = remainingColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+                }
             }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Remaining: ${formatRp((config.targetAmount - config.currentAmount).coerceAtLeast(0.0))}",
-                color = remainingColor,
-                fontSize = 11.sp,
-                modifier = Modifier.align(Alignment.End)
-            )
             Spacer(modifier = Modifier.height(12.dp))
             LinearProgressIndicator(
                 progress = { progressRatio },
