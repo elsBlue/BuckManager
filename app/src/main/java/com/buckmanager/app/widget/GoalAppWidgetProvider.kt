@@ -152,25 +152,39 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 views.setTextViewText(R.id.widget_current_amount, formatRp(fundGoal.currentAmount))
                 views.setTextViewText(R.id.widget_target_amount, "Target: ${formatRp(fundGoal.targetAmount)}")
 
-                try {
-                    val valueColor = android.graphics.Color.parseColor(fundGoal.valueColorHex)
-                    val labelColor = android.graphics.Color.parseColor(fundGoal.labelColorHex)
+                fun parseOr(hex: String, fallback: Int): Int = try {
+                    android.graphics.Color.parseColor(hex)
+                } catch (_: Exception) { fallback }
 
-                    views.setTextColor(R.id.widget_title, valueColor)
-                    views.setTextColor(R.id.widget_current_amount, valueColor)
-                    views.setTextColor(R.id.widget_percentage, labelColor)
-                    views.setTextColor(R.id.widget_target_amount, labelColor)
-                    views.setInt(R.id.widget_title_icon, "setColorFilter", labelColor)
-                } catch (e: Exception) {
-                }
+                val labelColor = parseOr(fundGoal.labelColorHex, android.graphics.Color.parseColor("#D4A54A"))
+                val iconColor = parseOr(fundGoal.iconColorHex, labelColor)
+                val nameColor = parseOr(fundGoal.nameColorHex, parseOr(fundGoal.valueColorHex, android.graphics.Color.WHITE))
+                val percentColor = parseOr(fundGoal.percentColorHex, nameColor)
+                val currentColor = parseOr(fundGoal.currentSavedColorHex, nameColor)
+                val targetColor = parseOr(fundGoal.targetAmountColorHex, labelColor)
+                val remainingColor = parseOr(fundGoal.remainingColorHex, targetColor)
+                val fillColor = parseOr(fundGoal.progressFillColorHex, labelColor)
+                val trackColor = parseOr(fundGoal.progressTrackColorHex, android.graphics.Color.parseColor("#40808080"))
+
+                views.setTextColor(R.id.widget_title, nameColor)
+                views.setTextColor(R.id.widget_current_amount, currentColor)
+                views.setTextColor(R.id.widget_percentage, percentColor)
+                views.setTextColor(R.id.widget_target_amount, targetColor)
+                views.setTextColor(R.id.widget_remaining, remainingColor)
+                views.setImageViewResource(R.id.widget_title_icon, goalIconRes(fundGoal.iconName))
+                views.setInt(R.id.widget_title_icon, "setColorFilter", iconColor)
 
                 val progressRatio = if (fundGoal.targetAmount > 0) {
                     (fundGoal.currentAmount / fundGoal.targetAmount).coerceIn(0.0, 1.0)
                 } else 0.0
                 val percentageInt = (progressRatio * 100).toInt()
-
+                val remainingAmount = (fundGoal.targetAmount - fundGoal.currentAmount).coerceAtLeast(0.0)
                 views.setTextViewText(R.id.widget_percentage, "${percentageInt}%")
-                views.setProgressBar(R.id.widget_progress_bar, 100, percentageInt, false)
+                views.setTextViewText(
+                    R.id.widget_remaining,
+                    if (remainingAmount <= 0) "Goal reached!" else "Remaining: ${formatRp(remainingAmount)}"
+                )
+                views.setImageViewBitmap(R.id.widget_progress_image, progressBitmap(fillColor, trackColor, progressRatio.toFloat()))
 
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
                     val density = context.resources.displayMetrics.density
@@ -216,6 +230,39 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 )
                 appWidgetManager.requestPinAppWidget(myProvider, null, successCallback)
             }
+        }
+
+        private fun goalIconRes(name: String): Int = when (name) {
+            "star" -> R.drawable.ic_star
+            "home" -> R.drawable.ic_home
+            "heart" -> R.drawable.ic_heart
+            "wallet", "money" -> R.drawable.ic_wallet
+            "flight" -> R.drawable.ic_flight
+            "shopping" -> R.drawable.ic_shopping
+            "gift" -> R.drawable.ic_gift
+            "coffee" -> R.drawable.ic_coffee
+            "car" -> R.drawable.ic_car
+            "book" -> R.drawable.ic_book
+            else -> R.drawable.ic_flag
+        }
+
+        private fun progressBitmap(fill: Int, track: Int, ratio: Float): android.graphics.Bitmap {
+            val width = 600
+            val height = 20
+            val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bitmap)
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+            val rect = android.graphics.RectF(0f, 0f, width.toFloat(), height.toFloat())
+            paint.color = track
+            canvas.drawRoundRect(rect, 10f, 10f, paint)
+            if (ratio > 0f) {
+                paint.color = fill
+                canvas.drawRoundRect(
+                    android.graphics.RectF(0f, 0f, width * ratio.coerceIn(0f, 1f), height.toFloat()),
+                    10f, 10f, paint
+                )
+            }
+            return bitmap
         }
     }
 

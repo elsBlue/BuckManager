@@ -92,7 +92,6 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
 
         // Modal States
         var showSettings by remember { mutableStateOf(false) }
-        var showWidgetCustomizer by remember { mutableStateOf(false) }
         var showSignInGate by remember { mutableStateOf(false) }
         var signInReason by remember { mutableStateOf(SignInGateReason.Restore) }
 
@@ -193,7 +192,8 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                     composable("onboarding") {
                         OnboardingScreen(
                             isDarkMode = isDarkMode,
-                            onFinish = {
+                            onFinish = { code, symbol ->
+                                viewModel.setCurrency(code, symbol)
                                 viewModel.completeOnboarding()
                                 navController.navigate(if (userEmail == null) "login" else "dashboard") {
                                     popUpTo("onboarding") { inclusive = true }
@@ -321,10 +321,6 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                onOpenCustomizeWidget = {
-                    showSettings = false
-                    showWidgetCustomizer = true
-                },
                 onExportJson = { uri ->
                     viewModel.exportToJson(context, uri)
                     android.widget.Toast.makeText(context, "Exporting JSON backup...", android.widget.Toast.LENGTH_SHORT).show()
@@ -340,6 +336,7 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                         showSignInGate = true
                     }
                 },
+                onCurrencyChanged = { viewModel.refreshCurrency() },
                 onToggleTestPremium = { viewModel.setTestPremiumEnabled(it) }
             )
 
@@ -415,13 +412,6 @@ fun BuckApp(viewModel: BuckViewModel = viewModel()) {
                 }
             )
 
-            WidgetCustomizerModal(
-                visible = showWidgetCustomizer,
-                fundGoalConfig = fundGoal,
-                isDarkMode = isDarkMode,
-                onDismiss = { showWidgetCustomizer = false },
-                onSaveFundGoal = { updated -> viewModel.updateFundGoal(updated) }
-            )
 
 
 

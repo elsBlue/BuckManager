@@ -49,7 +49,6 @@ import com.buckmanager.app.ui.GoldAccent
 import com.buckmanager.app.ui.appTextFieldColors
 import androidx.core.graphics.toColorInt
 import androidx.compose.ui.platform.LocalContext
-import com.buckmanager.app.widget.GoalAppWidgetProvider
 
 fun parseHexColor(hex: String, defaultColor: Color = Color.DarkGray): Color {
     return try {
@@ -106,6 +105,16 @@ fun FundGoalEditorModal(
     var borderColorHex by remember(currentConfig) { mutableStateOf(currentConfig.borderColorHex) }
     var btnBgColorHex by remember(currentConfig) { mutableStateOf(currentConfig.btnBgColorHex) }
     var btnTextColorHex by remember(currentConfig) { mutableStateOf(currentConfig.btnTextColorHex) }
+    var iconName by remember(currentConfig) { mutableStateOf(currentConfig.iconName) }
+    var iconColorHex by remember(currentConfig) { mutableStateOf(currentConfig.iconColorHex) }
+    var nameColorHex by remember(currentConfig) { mutableStateOf(currentConfig.nameColorHex) }
+    var nameFontFamily by remember(currentConfig) { mutableStateOf(currentConfig.nameFontFamily) }
+    var percentColorHex by remember(currentConfig) { mutableStateOf(currentConfig.percentColorHex) }
+    var currentSavedColorHex by remember(currentConfig) { mutableStateOf(currentConfig.currentSavedColorHex) }
+    var targetAmountColorHex by remember(currentConfig) { mutableStateOf(currentConfig.targetAmountColorHex) }
+    var remainingColorHex by remember(currentConfig) { mutableStateOf(currentConfig.remainingColorHex) }
+    var progressTrackColorHex by remember(currentConfig) { mutableStateOf(currentConfig.progressTrackColorHex) }
+    var progressFillColorHex by remember(currentConfig) { mutableStateOf(currentConfig.progressFillColorHex) }
     var bgUri by remember(currentConfig) { mutableStateOf(currentConfig.backgroundImageUri ?: "") }
     var dimOpacity by remember(currentConfig) { mutableFloatStateOf(currentConfig.dimOpacity.toFloat()) }
 
@@ -140,7 +149,7 @@ fun FundGoalEditorModal(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -148,7 +157,7 @@ fun FundGoalEditorModal(
                     text = "Customize Fund Goal",
                     color = textColor,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    fontSize = 16.sp
                 )
                 IconButton(
                     onClick = onDismiss,
@@ -194,11 +203,21 @@ fun FundGoalEditorModal(
                     labelColorHex = labelColor,
                     valueColorHex = valueColor,
                     btnBgColorHex = btnBgColorHex,
-                    btnTextColorHex = btnTextColorHex
+                    btnTextColorHex = btnTextColorHex,
+                    iconName = iconName,
+                    iconColorHex = iconColorHex,
+                    nameColorHex = nameColorHex,
+                    nameFontFamily = nameFontFamily,
+                    percentColorHex = percentColorHex,
+                    currentSavedColorHex = currentSavedColorHex,
+                    targetAmountColorHex = targetAmountColorHex,
+                    remainingColorHex = remainingColorHex,
+                    progressTrackColorHex = progressTrackColorHex,
+                    progressFillColorHex = progressFillColorHex
                 ),
                 isDarkMode = isDarkMode,
                 showChrome = false,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)
             )
 
             var selectedTab by remember { mutableIntStateOf(0) }
@@ -223,8 +242,8 @@ fun FundGoalEditorModal(
                     .weight(1f)
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 when (selectedTab) {
                     0 -> {
@@ -239,7 +258,7 @@ fun FundGoalEditorModal(
                         OutlinedTextField(
                             value = target,
                             onValueChange = { target = filterAmountDigits(it) },
-                            label = { Text("Target Amount (Rp)", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
+                            label = { Text("Target Amount (${CurrencyConfig.currencyCode})", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             visualTransformation = AmountVisualTransformation,
                             modifier = Modifier.fillMaxWidth(),
@@ -249,21 +268,71 @@ fun FundGoalEditorModal(
                         OutlinedTextField(
                             value = current,
                             onValueChange = { current = filterAmountDigits(it) },
-                            label = { Text("Current Saved Amount (Rp)", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
+                            label = { Text("Current Saved Amount", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             visualTransformation = AmountVisualTransformation,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(AppShape.button),
                             colors = appTextFieldColors(isDarkMode)
                         )
+                        Text("Icon", color = textColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(IconPresets) { icon ->
+                                val selected = iconName == icon
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (selected) GoldAccent.copy(alpha = 0.2f) else if (isDarkMode) Color(0xFF181C26) else Color(0xFFF1F5F9))
+                                        .border(2.dp, if (selected) GoldAccent else Color.Transparent, RoundedCornerShape(10.dp))
+                                        .clickable { iconName = icon },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(getIconVector(icon), contentDescription = icon, tint = parseHexColor(iconColorHex, GoldAccent), modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+                        RichColorPicker("Icon color", iconColorHex, { iconColorHex = it }, isDarkMode)
+                        Text("Goal name font", color = textColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("sans" to "Sans", "serif" to "Serif", "mono" to "Mono").forEach { (id, label) ->
+                                val selected = nameFontFamily == id
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(50))
+                                        .background(if (selected) GoldAccent.copy(alpha = 0.15f) else Color.Transparent)
+                                        .border(1.dp, if (selected) GoldAccent else sheetBorder, RoundedCornerShape(50))
+                                        .clickable { nameFontFamily = id }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        label,
+                                        color = if (selected) GoldAccent else textColor,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = goalFontFamily(id)
+                                    )
+                                }
+                            }
+                        }
                     }
                     1 -> {
+                        Text("Goal look", color = textColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        RichColorPicker("Goal name", nameColorHex, { nameColorHex = it }, isDarkMode)
+                        RichColorPicker("Percent", percentColorHex, { percentColorHex = it }, isDarkMode)
+                        RichColorPicker("Current saved", currentSavedColorHex, { currentSavedColorHex = it }, isDarkMode)
+                        RichColorPicker("Target amount", targetAmountColorHex, { targetAmountColorHex = it }, isDarkMode)
+                        RichColorPicker("Remaining", remainingColorHex, { remainingColorHex = it }, isDarkMode)
+                        RichColorPicker("Progress track", progressTrackColorHex, { progressTrackColorHex = it }, isDarkMode)
+                        RichColorPicker("Progress fill", progressFillColorHex, { progressFillColorHex = it }, isDarkMode)
+                        HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
+                        Text("Card", color = textColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Use Gradient Background", color = textColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Gradient background", color = textColor, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                             Switch(
                                 checked = useGradient,
                                 onCheckedChange = { useGradient = it },
@@ -271,116 +340,64 @@ fun FundGoalEditorModal(
                             )
                         }
                         if (useGradient) {
-                            RichColorPicker(title = "Gradient Color 1", selectedColorHex = gradColor1, onColorSelected = { gradColor1 = it }, isDarkMode = isDarkMode)
-                            RichColorPicker(title = "Gradient Color 2", selectedColorHex = gradColor2, onColorSelected = { gradColor2 = it }, isDarkMode = isDarkMode)
-                            Column {
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("Gradient Angle", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                    Text("${gradientAngle.toInt()}°", color = GoldAccent, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                                }
-                                Slider(value = gradientAngle, onValueChange = { gradientAngle = it }, valueRange = 0f..360f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                            }
+                            RichColorPicker(title = "Gradient 1", selectedColorHex = gradColor1, onColorSelected = { gradColor1 = it }, isDarkMode = isDarkMode)
+                            RichColorPicker(title = "Gradient 2", selectedColorHex = gradColor2, onColorSelected = { gradColor2 = it }, isDarkMode = isDarkMode)
+                            CompactSlider(label = "Angle", value = gradientAngle, onValueChange = { gradientAngle = it }, valueRange = 0f..360f, unit = "°", isDarkMode = isDarkMode)
                         } else {
-                            RichColorPicker(title = "Background Color", selectedColorHex = selectedBg, onColorSelected = { selectedBg = it }, isDarkMode = isDarkMode)
+                            RichColorPicker(title = "Background", selectedColorHex = selectedBg, onColorSelected = { selectedBg = it }, isDarkMode = isDarkMode)
                         }
-                        RichColorPicker(
-                            title = "Accent / Progress Bar Color",
-                            selectedColorHex = labelColor,
-                            onColorSelected = { labelColor = it },
-                            isDarkMode = isDarkMode
-                        )
-                        RichColorPicker(
-                            title = "Title & Value Text Color",
-                            selectedColorHex = valueColor,
-                            onColorSelected = { valueColor = it },
-                            isDarkMode = isDarkMode
-                        )
-                        RichColorPicker(
-                            title = "Border Color",
-                            selectedColorHex = borderColorHex,
-                            onColorSelected = { borderColorHex = it },
-                            isDarkMode = isDarkMode
-                        )
-                        RichColorPicker(
-                            title = "Button Background Color",
-                            selectedColorHex = btnBgColorHex,
-                            onColorSelected = { btnBgColorHex = it },
-                            isDarkMode = isDarkMode
-                        )
-                        RichColorPicker(
-                            title = "Button Text Color",
-                            selectedColorHex = btnTextColorHex,
-                            onColorSelected = { btnTextColorHex = it },
-                            isDarkMode = isDarkMode
-                        )
+                        RichColorPicker(title = "Border", selectedColorHex = borderColorHex, onColorSelected = { borderColorHex = it }, isDarkMode = isDarkMode)
+                        RichColorPicker(title = "Button fill", selectedColorHex = btnBgColorHex, onColorSelected = { btnBgColorHex = it }, isDarkMode = isDarkMode)
+                        RichColorPicker(title = "Button text", selectedColorHex = btnTextColorHex, onColorSelected = { btnTextColorHex = it }, isDarkMode = isDarkMode)
                     }
                     2 -> {
-                        Text("Corner Radius", color = textColor, fontWeight = FontWeight.Bold)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("TL: ${radiusTopLeft}dp", fontSize = 10.sp, color = GoldAccent)
-                                Slider(value = radiusTopLeft.toFloat(), onValueChange = { radiusTopLeft = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("TR: ${radiusTopRight}dp", fontSize = 10.sp, color = GoldAccent)
-                                Slider(value = radiusTopRight.toFloat(), onValueChange = { radiusTopRight = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                            }
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("BL: ${radiusBottomLeft}dp", fontSize = 10.sp, color = GoldAccent)
-                                Slider(value = radiusBottomLeft.toFloat(), onValueChange = { radiusBottomLeft = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("BR: ${radiusBottomRight}dp", fontSize = 10.sp, color = GoldAccent)
-                                Slider(value = radiusBottomRight.toFloat(), onValueChange = { radiusBottomRight = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                            }
-                        }
-
+                        LinkedInsetControl(
+                            title = "Roundness",
+                            topStart = radiusTopLeft,
+                            topEnd = radiusTopRight,
+                            bottomEnd = radiusBottomRight,
+                            bottomStart = radiusBottomLeft,
+                            onChange = { tl, tr, br, bl ->
+                                radiusTopLeft = tl
+                                radiusTopRight = tr
+                                radiusBottomRight = br
+                                radiusBottomLeft = bl
+                            },
+                            valueRange = 0f..40f,
+                            eachLabel = "Each corner",
+                            isDarkMode = isDarkMode
+                        )
                         HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
-                        Text("Border Width", color = textColor, fontWeight = FontWeight.Bold)
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("All Sides: ${borderTop}dp", fontSize = 10.sp, color = GoldAccent)
-                                Slider(
-                                    value = borderTop.toFloat(), 
-                                    onValueChange = { 
-                                        val newVal = it.toInt()
-                                        borderTop = newVal
-                                        borderRight = newVal
-                                        borderBottom = newVal
-                                        borderLeft = newVal
-                                    }, 
-                                    valueRange = 0f..10f, 
-                                    colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent)
-                                )
-                            }
-                        }
-
+                        CompactSlider(
+                            label = "Border",
+                            value = borderTop.toFloat(),
+                            onValueChange = {
+                                val newVal = it.toInt()
+                                borderTop = newVal
+                                borderRight = newVal
+                                borderBottom = newVal
+                                borderLeft = newVal
+                            },
+                            valueRange = 0f..10f,
+                            isDarkMode = isDarkMode
+                        )
                         HorizontalDivider(color = sheetBorder.copy(alpha = 0.3f))
-                        Text("Inner Padding", color = textColor, fontWeight = FontWeight.Bold)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Top: ${paddingTop}dp", fontSize = 10.sp, color = GoldAccent)
-                                Slider(value = paddingTop.toFloat(), onValueChange = { paddingTop = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Right: ${paddingRight}dp", fontSize = 10.sp, color = GoldAccent)
-                                Slider(value = paddingRight.toFloat(), onValueChange = { paddingRight = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                            }
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Bottom: ${paddingBottom}dp", fontSize = 10.sp, color = GoldAccent)
-                                Slider(value = paddingBottom.toFloat(), onValueChange = { paddingBottom = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Left: ${paddingLeft}dp", fontSize = 10.sp, color = GoldAccent)
-                                Slider(value = paddingLeft.toFloat(), onValueChange = { paddingLeft = it.toInt() }, valueRange = 0f..40f, colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent))
-                            }
-                        }
-
-                        Divider(color = sheetBorder)
+                        LinkedInsetControl(
+                            title = "Padding",
+                            topStart = paddingTop,
+                            topEnd = paddingRight,
+                            bottomEnd = paddingBottom,
+                            bottomStart = paddingLeft,
+                            onChange = { t, r, b, l ->
+                                paddingTop = t
+                                paddingRight = r
+                                paddingBottom = b
+                                paddingLeft = l
+                            },
+                            valueRange = 0f..40f,
+                            eachLabel = "Each side",
+                            isDarkMode = isDarkMode
+                        )
 
                         Text("Background Image & Crop", color = textColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Row(
@@ -453,21 +470,14 @@ fun FundGoalEditorModal(
                             }
                         }
 
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("Darken / Dim Level", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF64748B), fontSize = 11.sp)
-                                Text("${dimOpacity.toInt()}%", color = GoldAccent, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                            }
-                            Slider(
-                                value = dimOpacity,
-                                onValueChange = { dimOpacity = it },
-                                valueRange = 0f..100f,
-                                colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent)
-                            )
-                        }
+                        CompactSlider(
+                            label = "Dim",
+                            value = dimOpacity,
+                            onValueChange = { dimOpacity = it },
+                            valueRange = 0f..100f,
+                            unit = "%",
+                            isDarkMode = isDarkMode
+                        )
                     }
                 }
             }
@@ -476,8 +486,8 @@ fun FundGoalEditorModal(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
                     onClick = {
@@ -506,6 +516,16 @@ fun FundGoalEditorModal(
                         borderColorHex = currentConfig.borderColorHex
                         btnBgColorHex = currentConfig.btnBgColorHex
                         btnTextColorHex = currentConfig.btnTextColorHex
+                        iconName = currentConfig.iconName
+                        iconColorHex = currentConfig.iconColorHex
+                        nameColorHex = currentConfig.nameColorHex
+                        nameFontFamily = currentConfig.nameFontFamily
+                        percentColorHex = currentConfig.percentColorHex
+                        currentSavedColorHex = currentConfig.currentSavedColorHex
+                        targetAmountColorHex = currentConfig.targetAmountColorHex
+                        remainingColorHex = currentConfig.remainingColorHex
+                        progressTrackColorHex = currentConfig.progressTrackColorHex
+                        progressFillColorHex = currentConfig.progressFillColorHex
                         bgUri = currentConfig.backgroundImageUri ?: ""
                         dimOpacity = currentConfig.dimOpacity.toFloat()
                     },
@@ -542,11 +562,21 @@ fun FundGoalEditorModal(
                                 useGradient = useGradient,
                                 gradientColors = if (useGradient) listOf(gradColor1, gradColor2) else emptyList(),
                                 gradientAngle = gradientAngle,
-                                labelColorHex = labelColor,
-                                valueColorHex = valueColor,
+                                labelColorHex = progressFillColorHex,
+                                valueColorHex = nameColorHex,
                                 borderColorHex = borderColorHex,
                                 btnBgColorHex = btnBgColorHex,
-                                btnTextColorHex = btnTextColorHex
+                                btnTextColorHex = btnTextColorHex,
+                                iconName = iconName,
+                                iconColorHex = iconColorHex,
+                                nameColorHex = nameColorHex,
+                                nameFontFamily = nameFontFamily,
+                                percentColorHex = percentColorHex,
+                                currentSavedColorHex = currentSavedColorHex,
+                                targetAmountColorHex = targetAmountColorHex,
+                                remainingColorHex = remainingColorHex,
+                                progressTrackColorHex = progressTrackColorHex,
+                                progressFillColorHex = progressFillColorHex
                             )
                         )
                         onDismiss()
@@ -583,7 +613,6 @@ fun SettingsModal(
     onUnlockCustomization: () -> Unit,
     onLoginClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    onOpenCustomizeWidget: () -> Unit = {},
     onCurrencyChanged: () -> Unit = {},
     onExportJson: (android.net.Uri) -> Unit = {},
     onShareLook: (String) -> Unit = {},
@@ -952,51 +981,6 @@ fun SettingsModal(
                                         checkedThumbColor = GoldAccent,
                                         checkedTrackColor = GoldAccent.copy(alpha = 0.5f)
                                     )
-                                )
-                            }
-                        }
-                    }
-
-                    Surface(
-                        onClick = onOpenCustomizeWidget,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(AppShape.card),
-                        color = if (isDarkMode) AppChrome.rowDark else Color(0xFFF4F7FE),
-                        border = BorderStroke(AppStroke.thin, if (isDarkMode) AppChrome.mutedDark else AppChrome.mutedLight)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(RoundedCornerShape(AppShape.chip))
-                                    .background(Color(0xFF3673FC).copy(alpha = 0.15f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Widgets,
-                                    contentDescription = "Goal widget",
-                                    tint = Color(0xFF3673FC),
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column {
-                                Text(
-                                    text = "Goal homescreen widget",
-                                    color = if (isDarkMode) Color.White else Color(0xFF121926),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "Style and pin the goal widget",
-                                    color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
-                                    fontSize = 11.sp,
-                                    lineHeight = 14.sp
                                 )
                             }
                         }
@@ -1479,417 +1463,4 @@ fun GoalDepositModal(
             }
         }
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun WidgetCustomizerModal(
-    visible: Boolean,
-    fundGoalConfig: FundGoalConfig,
-    isDarkMode: Boolean,
-    onDismiss: () -> Unit,
-    onSaveFundGoal: (FundGoalConfig) -> Unit
-) {
-    if (!visible) return
-
-    val context = LocalContext.current
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    // State for Goal Widget customization
-    var currentBgColor by remember(fundGoalConfig) { mutableStateOf(fundGoalConfig.backgroundColorHex) }
-    var currentBgImageUri by remember(fundGoalConfig) { mutableStateOf(fundGoalConfig.backgroundImageUri ?: "") }
-    var currentDimOpacity by remember(fundGoalConfig) { mutableFloatStateOf(fundGoalConfig.dimOpacity.toFloat()) }
-
-    var currentBorderRadius by remember(fundGoalConfig) { mutableFloatStateOf(fundGoalConfig.radiusTopLeft.toFloat()) }
-    var currentBorderWidth by remember(fundGoalConfig) { mutableFloatStateOf(fundGoalConfig.borderTop.toFloat()) }
-    var currentBorderColor by remember(fundGoalConfig) { mutableStateOf(fundGoalConfig.borderColorHex) }
-
-    var currentPadding by remember(fundGoalConfig) { mutableFloatStateOf(fundGoalConfig.paddingTop.toFloat()) }
-
-    var currentLabelColor by remember(fundGoalConfig) { mutableStateOf(fundGoalConfig.labelColorHex) } // Accent / percentage
-    var currentValueColor by remember(fundGoalConfig) { mutableStateOf(fundGoalConfig.valueColorHex) } // Title & amount text
-    var currentBtnBgColor by remember(fundGoalConfig) { mutableStateOf(fundGoalConfig.btnBgColorHex) }
-    var currentBtnTextColor by remember(fundGoalConfig) { mutableStateOf(fundGoalConfig.btnTextColorHex) }
-
-    var croppingImageUri by remember { mutableStateOf<String?>(null) }
-
-    val photoPicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
-        if (uri != null) {
-            croppingImageUri = uri.toString()
-        }
-    }
-
-    ImageCropModal(
-        imageUri = croppingImageUri,
-        visible = croppingImageUri != null,
-        onDismiss = { croppingImageUri = null },
-        onCropConfirm = { croppedUri ->
-            currentBgImageUri = persistBackgroundImage(context, croppedUri) ?: croppedUri
-            croppingImageUri = null
-        }
-    )
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = if (isDarkMode) Color(0xFF0F1117) else Color(0xFFF8FAFC),
-        dragHandle = { BottomSheetDefaults.DragHandle() },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("📱 ", fontSize = 18.sp)
-                        Text(
-                            text = "Customize Home Screen Widget",
-                            color = if (isDarkMode) Color.White else Color(0xFF121926),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                    }
-                    Text(
-                        text = "Pengaturan Kostumisasi Widget Goal Android Home",
-                        color = GoldAccent,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                IconButton(
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(if (isDarkMode) Color(0xFF181C26) else Color(0xFFE2E8F0))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = if (isDarkMode) Color.White else Color(0xFF121926),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-
-            // LIVE PREVIEW OF ANDROID GOAL WIDGET
-            Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
-                Text(
-                    text = "HOME SCREEN WIDGET",
-                    color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                GoalWidgetLook(
-                    config = fundGoalConfig.copy(
-                        backgroundColorHex = currentBgColor,
-                        backgroundImageUri = currentBgImageUri.ifBlank { null },
-                        dimOpacity = currentDimOpacity.toInt(),
-                        radiusTopLeft = currentBorderRadius.toInt(),
-                        radiusTopRight = currentBorderRadius.toInt(),
-                        radiusBottomRight = currentBorderRadius.toInt(),
-                        radiusBottomLeft = currentBorderRadius.toInt(),
-                        borderTop = currentBorderWidth.toInt(),
-                        borderRight = currentBorderWidth.toInt(),
-                        borderBottom = currentBorderWidth.toInt(),
-                        borderLeft = currentBorderWidth.toInt(),
-                        borderColorHex = currentBorderColor,
-                        paddingTop = currentPadding.toInt(),
-                        paddingRight = currentPadding.toInt(),
-                        paddingBottom = currentPadding.toInt(),
-                        paddingLeft = currentPadding.toInt(),
-                        labelColorHex = currentLabelColor,
-                        valueColorHex = currentValueColor
-                    )
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Display only — tap opens the app. Deposit lives on the dashboard card.",
-                    color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
-                    fontSize = 11.sp,
-                    lineHeight = 14.sp
-                )
-            }
-
-            var selectedTab by remember { mutableIntStateOf(0) }
-            val tabs = listOf("Widget Type", "Colors", "Layout")
-
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = Color.Transparent,
-                divider = { Divider(color = if (isDarkMode) Color(0xFF2A273C) else Color(0xFFCBD5E1)) }
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        text = { Text(title, color = if (selectedTab == index) GoldAccent else if (isDarkMode) Color.White else Color(0xFF121926)) }
-                    )
-                }
-            }
-
-            // CONTROLS LIST
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                when (selectedTab) {
-                    0 -> {
-                        Text(
-                            "Currently only Goal Widget customization is supported.",
-                            color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A),
-                            fontSize = 14.sp
-                        )
-                    }
-                    1 -> {
-                        RichColorPicker(
-                            title = "🎨 Widget Background Color",
-                            selectedColorHex = currentBgColor,
-                            onColorSelected = { currentBgColor = it },
-                            isDarkMode = isDarkMode
-                        )
-                        RichColorPicker(
-                            title = "🖼 Border Color",
-                            selectedColorHex = currentBorderColor,
-                            onColorSelected = { currentBorderColor = it },
-                            isDarkMode = isDarkMode
-                        )
-                        RichColorPicker(
-                            title = "🏷 Progress Bar & Accent Color",
-                            selectedColorHex = currentLabelColor,
-                            onColorSelected = { currentLabelColor = it },
-                            isDarkMode = isDarkMode
-                        )
-                        RichColorPicker(
-                            title = "✍️ Title & Amount Text Color",
-                            selectedColorHex = currentValueColor,
-                            onColorSelected = { currentValueColor = it },
-                            isDarkMode = isDarkMode
-                        )
-                        RichColorPicker(
-                            title = "🔘 Deposit Button Background Color",
-                            selectedColorHex = currentBtnBgColor,
-                            onColorSelected = { currentBtnBgColor = it },
-                            isDarkMode = isDarkMode
-                        )
-                        RichColorPicker(
-                            title = "🔤 Deposit Button Text Color",
-                            selectedColorHex = currentBtnTextColor,
-                            onColorSelected = { currentBtnTextColor = it },
-                            isDarkMode = isDarkMode
-                        )
-                    }
-                    2 -> {
-                        // Sliders
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("🔘 Border Radius (Corner Roundness)", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A), fontSize = 12.sp)
-                                Text("${currentBorderRadius.toInt()} dp", color = GoldAccent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            }
-                            Slider(
-                                value = currentBorderRadius,
-                                onValueChange = { currentBorderRadius = it },
-                                valueRange = 0f..32f,
-                                colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent)
-                            )
-                        }
-
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("📦 Inner Padding", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A), fontSize = 12.sp)
-                                Text("${currentPadding.toInt()} dp", color = GoldAccent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            }
-                            Slider(
-                                value = currentPadding,
-                                onValueChange = { currentPadding = it },
-                                valueRange = 4f..32f,
-                                colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent)
-                            )
-                        }
-
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("✏️ Border Width", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A), fontSize = 12.sp)
-                                Text("${currentBorderWidth.toInt()} dp", color = GoldAccent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            }
-                            Slider(
-                                value = currentBorderWidth,
-                                onValueChange = { currentBorderWidth = it },
-                                valueRange = 0f..8f,
-                                colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent)
-                            )
-                        }
-
-                        Divider(color = if (isDarkMode) Color(0xFF2A273C) else Color(0xFFCBD5E1))
-
-                        Text("🖼 Background Image & Crop", color = if (isDarkMode) Color.White else Color(0xFF121926), fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            OutlinedButton(
-                                onClick = {
-                                    photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                                },
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = GoldAccent),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.Default.Image, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Pick Photo", fontSize = 11.sp)
-                            }
-
-                            if (currentBgImageUri.isNotBlank()) {
-                                OutlinedButton(
-                                    onClick = { croppingImageUri = currentBgImageUri },
-                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = if (isDarkMode) Color.White else Color.Black)
-                                ) {
-                                    Icon(Icons.Default.Crop, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Crop", fontSize = 11.sp)
-                                }
-
-                                IconButton(
-                                    onClick = { currentBgImageUri = "" },
-                                    colors = IconButtonDefaults.iconButtonColors(contentColor = Color(0xFFFB7185))
-                                ) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Clear")
-                                }
-                            }
-                        }
-
-                        OutlinedTextField(
-                            value = currentBgImageUri,
-                            onValueChange = { currentBgImageUri = it },
-                            label = { Text("Image URL or Path") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(AppShape.button),
-                            colors = appTextFieldColors(isDarkMode)
-                        )
-
-                        Text("Sample Wallpapers", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A), fontSize = 11.sp)
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(PresetBackgroundImages) { url ->
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(AppShape.tick))
-                                        .border(2.dp, if (currentBgImageUri == url) GoldAccent else Color.Transparent, RoundedCornerShape(8.dp))
-                                        .clickable { currentBgImageUri = url }
-                                ) {
-                                    AsyncImage(
-                                        model = url,
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                }
-                            }
-                        }
-
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("Darken / Dim Level", color = if (isDarkMode) Color(0xFF9CA3AF) else Color(0xFF5A667A), fontSize = 11.sp)
-                                Text("${currentDimOpacity.toInt()}%", color = GoldAccent, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                            }
-                            Slider(
-                                value = currentDimOpacity,
-                                onValueChange = { currentDimOpacity = it },
-                                valueRange = 0f..100f,
-                                colors = SliderDefaults.colors(thumbColor = GoldAccent, activeTrackColor = GoldAccent)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Action Row
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp)
-            ) {
-                OutlinedButton(
-                    onClick = {
-                        GoalAppWidgetProvider.pinWidgetToHomeScreen(context)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(AppShape.card),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = GoldAccent)
-                ) {
-                    Icon(Icons.Default.Widgets, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("📌 PASANG WIDGET GOAL KE HOME SCREEN", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = {
-                        val updatedGoal = fundGoalConfig.copy(
-                            backgroundColorHex = currentBgColor,
-                            backgroundImageUri = currentBgImageUri.ifBlank { null },
-                            dimOpacity = currentDimOpacity.toInt(),
-                            radiusTopLeft = currentBorderRadius.toInt(),
-                            radiusTopRight = currentBorderRadius.toInt(),
-                            radiusBottomRight = currentBorderRadius.toInt(),
-                            radiusBottomLeft = currentBorderRadius.toInt(),
-                            borderTop = currentBorderWidth.toInt(),
-                            borderRight = currentBorderWidth.toInt(),
-                            borderBottom = currentBorderWidth.toInt(),
-                            borderLeft = currentBorderWidth.toInt(),
-                            borderColorHex = currentBorderColor,
-                            paddingTop = currentPadding.toInt(),
-                            paddingRight = currentPadding.toInt(),
-                            paddingBottom = currentPadding.toInt(),
-                            paddingLeft = currentPadding.toInt(),
-                            labelColorHex = currentLabelColor,
-                            valueColorHex = currentValueColor,
-                            btnBgColorHex = currentBtnBgColor,
-                            btnTextColorHex = currentBtnTextColor
-                        )
-                        onSaveFundGoal(updatedGoal)
-                        GoalAppWidgetProvider.updateAllWidgets(context)
-                        onDismiss()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(AppShape.card),
-                    colors = ButtonDefaults.buttonColors(containerColor = GoldAccent)
-                ) {
-                    Text("SIMPAN KOSTUMISASI WIDGET", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp)
-                }
-            }
-        }
-    }
 }

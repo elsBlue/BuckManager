@@ -70,8 +70,6 @@ GitHub Actions also builds a debug APK on every push to `main`.
 ## Docs
 - [Architecture](docs/ARCHITECTURE.md)
 - [Play Billing setup](docs/PLAY_BILLING_SETUP.md)
-- [Dev tracker](DEV_TRACKER.md)
-- Legacy Expo docs (archived, outdated): [docs/archive/legacy-expo](docs/archive/legacy-expo)
 
 ## License
 MIT

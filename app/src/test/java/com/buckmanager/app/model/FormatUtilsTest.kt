@@ -14,6 +14,15 @@ class FormatUtilsTest {
     }
 
     @Test
+    fun normalizeSymbol_idrAlwaysHasTrailingSpace() {
+        assertEquals("Rp ", CurrencyConfig.normalizeSymbol("IDR", "Rp"))
+        assertEquals("Rp ", CurrencyConfig.normalizeSymbol("IDR", "Rp "))
+        assertEquals("$", CurrencyConfig.normalizeSymbol("USD", "USD"))
+        assertEquals("€", CurrencyConfig.normalizeSymbol("EUR", "EUR"))
+        assertEquals("£", CurrencyConfig.normalizeSymbol("GBP", "GBP"))
+    }
+
+    @Test
     fun formatRp_includesSymbolAndDigits() {
         val formatted = formatRp(15000.0)
         assertTrue(formatted.startsWith("Rp"))

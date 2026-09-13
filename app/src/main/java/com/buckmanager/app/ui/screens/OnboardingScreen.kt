@@ -1,6 +1,8 @@
 package com.buckmanager.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.buckmanager.app.model.CurrencyConfig
 import com.buckmanager.app.ui.AppChrome
 import com.buckmanager.app.ui.AppShape
 import com.buckmanager.app.ui.GoldAccent
@@ -50,11 +53,12 @@ val features = listOf(
 )
 
 @Composable
-fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
+fun OnboardingScreen(isDarkMode: Boolean, onFinish: (String, String) -> Unit) {
     val bgColor = if (isDarkMode) AppChrome.pageDark else AppChrome.pageLight
     val surfaceColor = if (isDarkMode) AppChrome.rowDark else AppChrome.rowLight
     val textColor = if (isDarkMode) Color.White else Color(0xFF121926)
     val subtitleColor = if (isDarkMode) Color(0xFFA0A0AB) else Color(0xFF5A667A)
+    var selectedCode by remember { mutableStateOf(CurrencyConfig.currencyCode.ifBlank { "IDR" }) }
 
     Box(
         modifier = Modifier
@@ -69,10 +73,9 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
         ) {
             Spacer(modifier = Modifier.weight(0.3f))
             
-            // Header Image / Icon
             Box(
                 modifier = Modifier
-                    .size(100.dp)
+                    .size(88.dp)
                     .clip(CircleShape)
                     .background(surfaceColor),
                 contentAlignment = Alignment.Center
@@ -81,13 +84,12 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
                     tint = GoldAccent,
-                    modifier = Modifier.size(52.dp)
+                    modifier = Modifier.size(48.dp)
                 )
             }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
-            // Main Title
             Text(
                 text = buildAnnotatedString {
                     append("Welcome to\n")
@@ -102,22 +104,21 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
                 lineHeight = 40.sp
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             Text(
                 text = "Your ultimate companion for managing finances with style and precision.",
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 color = subtitleColor,
                 textAlign = TextAlign.Center,
-                lineHeight = 24.sp
+                lineHeight = 22.sp
             )
             
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(28.dp))
             
-            // Features List
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 features.forEach { feature ->
                     Row(
@@ -126,7 +127,7 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(44.dp)
                                 .clip(RoundedCornerShape(AppShape.chip))
                                 .background(surfaceColor),
                             contentAlignment = Alignment.Center
@@ -135,20 +136,20 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
                                 imageVector = feature.icon,
                                 contentDescription = null,
                                 tint = GoldAccent,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                         
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(14.dp))
                         
                         Column {
                             Text(
                                 text = feature.title,
                                 color = textColor,
-                                fontSize = 16.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = buildAnnotatedString {
                                     val parts = feature.description.split(feature.highlightWord)
@@ -163,8 +164,63 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
                                     }
                                 },
                                 color = subtitleColor,
-                                fontSize = 14.sp,
-                                lineHeight = 20.sp
+                                fontSize = 13.sp,
+                                lineHeight = 18.sp
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Your currency",
+                color = textColor,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "IDR is the default. You can change this later in Menu.",
+                color = subtitleColor,
+                fontSize = 12.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CurrencyConfig.choices.forEach { choice ->
+                    val selected = selectedCode == choice.code
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(50))
+                            .background(if (selected) GoldAccent else surfaceColor)
+                            .border(
+                                1.dp,
+                                if (selected) GoldAccent else (if (isDarkMode) Color(0xFF2A273C) else Color(0xFFCBD5E1)),
+                                RoundedCornerShape(50)
+                            )
+                            .clickable { selectedCode = choice.code }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                choice.code,
+                                color = if (selected) Color.White else textColor,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                choice.symbol.trim(),
+                                color = if (selected) Color.White.copy(alpha = 0.9f) else subtitleColor,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
@@ -173,14 +229,17 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
             
             Spacer(modifier = Modifier.weight(1f))
             
-            // Action Button
             Button(
-                onClick = onFinish,
+                onClick = {
+                    val choice = CurrencyConfig.choices.firstOrNull { it.code == selectedCode }
+                        ?: CurrencyConfig.choices.first()
+                    onFinish(choice.code, choice.symbol)
+                },
                 shape = RoundedCornerShape(AppShape.button),
                 colors = ButtonDefaults.buttonColors(containerColor = GoldAccent),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(52.dp)
             ) {
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -189,7 +248,7 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
                     Text(
                         text = "Get Started",
                         color = Color.White,
-                        fontSize = 18.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -197,7 +256,7 @@ fun OnboardingScreen(isDarkMode: Boolean, onFinish: () -> Unit) {
                         imageVector = Icons.Default.ArrowForward,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }

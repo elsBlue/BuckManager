@@ -209,7 +209,7 @@ fun QuickLooksRow(
 }
 
 val ColorPresets = listOf("#1D2A96", "#EC407A", "#FFB300", "#F5B041", "#10B981", "#FB7185", "#0F1117", "#F0F4FA", "#8C98B2", "#26A69A")
-val IconPresets = listOf("home", "gamepad", "wallet", "flight", "shopping", "drink", "car", "heart", "health", "book", "laptop", "gift", "coffee", "money", "building")
+val IconPresets = listOf("flag", "star", "home", "wallet", "money", "heart", "flight", "shopping", "gift", "coffee", "car", "book")
 val PresetBackgroundImages = listOf(
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80",
     "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&q=80",
@@ -235,6 +235,7 @@ fun getIconVector(iconName: String): ImageVector {
         "coffee" -> Icons.Default.LocalCafe
         "money" -> Icons.Default.Payments
         "building" -> Icons.Default.Apartment
+        "flag" -> Icons.Default.Flag
         "star" -> Icons.Default.Star
         "phone" -> Icons.Default.Phone
         else -> Icons.Default.Folder
@@ -277,7 +278,7 @@ fun ImageCropModal(
                     modifier = Modifier
                         .fillMaxWidth()
                         .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -555,7 +556,7 @@ fun AccordionSection(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -667,7 +668,7 @@ fun BackgroundEditorModal(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -675,7 +676,7 @@ fun BackgroundEditorModal(
                     text = "Dashboard Background",
                     color = textColor,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontSize = 16.sp
                 )
                 IconButton(
                     onClick = onDismiss,
@@ -710,16 +711,16 @@ fun BackgroundEditorModal(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // SCROLLABLE SECTIONS
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 if (selectedTab == 0) {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -892,7 +893,7 @@ fun BackgroundEditorModal(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 16.dp)
                     .padding(bottom = 12.dp)
                     .navigationBarsPadding(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -1028,7 +1029,7 @@ fun HeaderCardEditorModal(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -1054,7 +1055,7 @@ fun HeaderCardEditorModal(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // STICKY CARD LIVE PREVIEW
             HeaderCardLook(
@@ -1086,7 +1087,7 @@ fun HeaderCardEditorModal(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 16.dp)
                     .padding(bottom = 16.dp)
             )
 
@@ -1105,16 +1106,16 @@ fun HeaderCardEditorModal(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // SCROLLABLE SECTIONS
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 if (selectedTab == 0) { // Look
                     QuickLooksRow(
@@ -1303,13 +1304,13 @@ fun HeaderCardEditorModal(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // BOTTOM ACTION BUTTONS
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 16.dp)
                     .padding(bottom = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -1465,7 +1466,7 @@ fun EnvelopeEditorModal(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -1473,7 +1474,7 @@ fun EnvelopeEditorModal(
                     text = "Edit Envelope",
                     color = textColor,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontSize = 16.sp
                 )
                 IconButton(onClick = onDismiss) {
                     Icon(Icons.Default.Close, contentDescription = "Close", tint = textColor)
@@ -1525,7 +1526,7 @@ fun EnvelopeEditorModal(
                 } else null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
             )
 
             TabRow(
@@ -1547,7 +1548,7 @@ fun EnvelopeEditorModal(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -1570,10 +1571,10 @@ fun EnvelopeEditorModal(
                                 val isSelected = iconName == icon
                                 Box(
                                     modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(10.dp))
                                         .background(if (isSelected) GoldAccent.copy(alpha = 0.2f) else if (isDarkMode) Color(0xFF181C26) else Color(0xFFF1F5F9))
-                                        .border(2.dp, if (isSelected) GoldAccent else Color.Transparent, RoundedCornerShape(12.dp))
+                                        .border(2.dp, if (isSelected) GoldAccent else Color.Transparent, RoundedCornerShape(10.dp))
                                         .clickable { iconName = icon },
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -1833,7 +1834,7 @@ fun EnvelopeEditorModal(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 16.dp)
                     .padding(bottom = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -1972,7 +1973,7 @@ fun AddEnvelopeModal(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -1980,7 +1981,7 @@ fun AddEnvelopeModal(
                     text = "Add Envelope",
                     color = textColor,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontSize = 16.sp
                 )
                 IconButton(onClick = onDismiss) {
                     Icon(Icons.Default.Close, contentDescription = "Close", tint = textColor)
@@ -2029,7 +2030,7 @@ fun AddEnvelopeModal(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
             )
 
             TabRow(
@@ -2051,7 +2052,7 @@ fun AddEnvelopeModal(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -2074,10 +2075,10 @@ fun AddEnvelopeModal(
                                 val isSelected = iconName == icon
                                 Box(
                                     modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(10.dp))
                                         .background(if (isSelected) GoldAccent.copy(alpha = 0.2f) else if (isDarkMode) Color(0xFF181C26) else Color(0xFFF1F5F9))
-                                        .border(2.dp, if (isSelected) GoldAccent else Color.Transparent, RoundedCornerShape(12.dp))
+                                        .border(2.dp, if (isSelected) GoldAccent else Color.Transparent, RoundedCornerShape(10.dp))
                                         .clickable { iconName = icon },
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -2222,7 +2223,7 @@ fun AddEnvelopeModal(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 16.dp)
                     .padding(bottom = 24.dp)
             ) {
                 Button(

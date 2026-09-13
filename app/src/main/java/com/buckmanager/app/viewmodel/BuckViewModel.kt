@@ -38,6 +38,12 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
 
     fun refreshCurrency() {
         _currencySymbol.value = com.buckmanager.app.model.CurrencyConfig.symbol
+        GoalAppWidgetProvider.updateAllWidgets(getApplication())
+    }
+
+    fun setCurrency(code: String, symbol: String) {
+        com.buckmanager.app.model.CurrencyConfig.save(getApplication(), code, symbol)
+        refreshCurrency()
     }
 
     fun createLocalSnapshot(context: android.content.Context) {
@@ -225,6 +231,8 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
             // Load settings
             val settings = db.settingDao().getAllSettings().associate { it.key to it.value }
             _hasSeenOnboarding.value = settings["has_seen_onboarding"] == "true"
+            CurrencyConfig.load(getApplication())
+            _currencySymbol.value = CurrencyConfig.symbol
 
             // Envelopes config
             settings["envelopes_config"]?.let { envStr ->
@@ -255,7 +263,7 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
             // Fund goal (synchronous load to ensure it's available for applyThemePreset)
             settings["fund_goal_config"]?.let { fgStr ->
                 try {
-                    _fundGoal.value = json.decodeFromString<FundGoalConfig>(fgStr)
+                    _fundGoal.value = json.decodeFromString<FundGoalConfig>(fgStr).migrateLookFromLegacy(fgStr)
                 } catch (e: Exception) {}
             }
 
@@ -266,7 +274,7 @@ class BuckViewModel(application: Application) : AndroidViewModel(application) {
                     db.settingDao().getSettingFlow("fund_goal_config").collect { entity ->
                         entity?.value?.let { fgStr ->
                             try {
-                                val fg = json.decodeFromString<FundGoalConfig>(fgStr)
+                                val fg = json.decodeFromString<FundGoalConfig>(fgStr).migrateLookFromLegacy(fgStr)
                                 _fundGoal.value = fg
                                 GoalAppWidgetProvider.saveGoalToPrefs(getApplication(), fg)
                             } catch (e: Exception) {}

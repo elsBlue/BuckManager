@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.buckmanager.app.model.CurrencyChoice
 import com.buckmanager.app.model.CurrencyConfig
 import com.buckmanager.app.ui.AppShape
 
@@ -32,35 +33,15 @@ fun CurrencyModal(
             Text("Select Currency", color = if (isDarkMode) Color.White else Color.Black, fontWeight = FontWeight.Bold)
         },
         text = {
-            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                CurrencyOption(
-                    title = "Indonesian Rupiah (IDR)",
-                    symbol = "Rp",
-                    isSelected = CurrencyConfig.currencyCode == "IDR",
-                    isDarkMode = isDarkMode,
-                    onClick = { onSelect("IDR", "Rp") }
-                )
-                CurrencyOption(
-                    title = "United States Dollar (USD)",
-                    symbol = "$",
-                    isSelected = CurrencyConfig.currencyCode == "USD",
-                    isDarkMode = isDarkMode,
-                    onClick = { onSelect("USD", "$") }
-                )
-                CurrencyOption(
-                    title = "Euro (EUR)",
-                    symbol = "€",
-                    isSelected = CurrencyConfig.currencyCode == "EUR",
-                    isDarkMode = isDarkMode,
-                    onClick = { onSelect("EUR", "€") }
-                )
-                CurrencyOption(
-                    title = "British Pound (GBP)",
-                    symbol = "£",
-                    isSelected = CurrencyConfig.currencyCode == "GBP",
-                    isDarkMode = isDarkMode,
-                    onClick = { onSelect("GBP", "£") }
-                )
+            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                CurrencyConfig.choices.forEach { choice ->
+                    CurrencyOption(
+                        choice = choice,
+                        isSelected = CurrencyConfig.currencyCode == choice.code,
+                        isDarkMode = isDarkMode,
+                        onClick = { onSelect(choice.code, choice.symbol) }
+                    )
+                }
             }
         },
         confirmButton = {
@@ -72,18 +53,18 @@ fun CurrencyModal(
 }
 
 @Composable
-private fun CurrencyOption(title: String, symbol: String, isSelected: Boolean, isDarkMode: Boolean, onClick: () -> Unit) {
+private fun CurrencyOption(choice: CurrencyChoice, isSelected: Boolean, isDarkMode: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(AppShape.card))
             .background(if (isSelected) Color(0xFFD4A54A).copy(alpha = 0.2f) else Color.Transparent)
             .clickable { onClick() }
-            .padding(16.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(title, color = if (isDarkMode) Color.White else Color.Black, fontSize = 16.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
-        Text(symbol, color = if (isSelected) Color(0xFFD4A54A) else (if (isDarkMode) Color(0xFF8B92A5) else Color(0xFF5A667A)), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(choice.title, color = if (isDarkMode) Color.White else Color.Black, fontSize = 14.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+        Text(choice.symbol.trim(), color = if (isSelected) Color(0xFFD4A54A) else (if (isDarkMode) Color(0xFF8B92A5) else Color(0xFF5A667A)), fontSize = 14.sp, fontWeight = FontWeight.Bold)
     }
 }

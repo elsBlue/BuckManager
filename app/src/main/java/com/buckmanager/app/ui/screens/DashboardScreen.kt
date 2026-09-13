@@ -40,6 +40,7 @@ import com.buckmanager.app.ui.AppSpacing
 import com.buckmanager.app.ui.GoldAccent
 import com.buckmanager.app.ui.appTextFieldColors
 import com.buckmanager.app.utils.customCardStyle
+import com.buckmanager.app.ui.components.FundGoalLook
 import com.buckmanager.app.ui.components.GoalDepositModal
 import com.buckmanager.app.ui.components.PremiumModal
 import com.buckmanager.app.ui.components.SignInGateDialog
@@ -446,214 +447,19 @@ fun DashboardScreen(
 
             // Goal Feature Widget
             item {
-                val progressRatio = if (fundGoal.targetAmount > 0) {
-                    (fundGoal.currentAmount / fundGoal.targetAmount).toFloat().coerceIn(0f, 1f)
-                } else 0f
-                val percentageInt = (progressRatio * 100).toInt()
-                val remainingAmount = (fundGoal.targetAmount - fundGoal.currentAmount).coerceAtLeast(0.0)
-
-                val labelColor = parseHexColor(fundGoal.labelColorHex, GoldAccent)
-                val valueColor = parseHexColor(fundGoal.valueColorHex, if (isDarkMode) Color.White else Color(0xFF121926))
-
-                val fundContainerColor = if (!fundGoal.backgroundImageUri.isNullOrBlank()) Color.Transparent else parseHexColor(fundGoal.backgroundColorHex, Color(0xFF181C26))
-                Box(
+                FundGoalLook(
+                    config = fundGoal,
+                    isDarkMode = isDarkMode,
+                    hideBalances = hideBalances,
+                    currencySymbol = currencySymbol,
+                    showChrome = true,
+                    showEdit = !isEditLocked && viewModel.hasPremium(),
+                    onDeposit = { showGoalDepositModal = true },
+                    onEdit = onEditFundGoal,
+                    onPinWidget = { GoalAppWidgetProvider.pinWidgetToHomeScreen(context) },
+                    onSetGoal = onEditFundGoal,
                     modifier = Modifier.fillMaxWidth()
-                        .customCardStyle(
-                            shape = RoundedCornerShape(
-                                topStart = fundGoal.radiusTopLeft.dp,
-                                topEnd = fundGoal.radiusTopRight.dp,
-                                bottomEnd = fundGoal.radiusBottomRight.dp,
-                                bottomStart = fundGoal.radiusBottomLeft.dp
-                            ),
-                            backgroundColor = fundContainerColor,
-                            useGradient = fundGoal.useGradient,
-                            gradientColors = fundGoal.gradientColors.map { parseHexColor(it) },
-                            gradientAngle = fundGoal.gradientAngle,
-                            borderTop = fundGoal.borderTop.dp,
-                            borderRight = fundGoal.borderRight.dp,
-                            borderBottom = fundGoal.borderBottom.dp,
-                            borderLeft = fundGoal.borderLeft.dp,
-                            borderColor = parseHexColor(fundGoal.borderColorHex, labelColor)
-                        )
-                ) {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        if (!fundGoal.backgroundImageUri.isNullOrBlank()) {
-                            AsyncImage(
-                                model = fundGoal.backgroundImageUri,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.matchParentSize()
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .background(Color.Black.copy(alpha = (fundGoal.dimOpacity / 100f).coerceIn(0f, 0.98f)))
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier.padding(start = fundGoal.paddingLeft.dp, top = fundGoal.paddingTop.dp, end = fundGoal.paddingRight.dp, bottom = fundGoal.paddingBottom.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            // Header Row: Title & Percentage Badge & Edit Pencil
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Icon(Icons.Default.Flag, contentDescription = null, tint = labelColor, modifier = Modifier.size(22.dp))
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Column {
-                                        Text(
-                                            text = fundGoal.name.ifBlank { "My Goal" },
-                                            color = valueColor,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 16.sp
-                                        )
-                                        Text(
-                                            text = "TARGET SAVINGS",
-                                            color = labelColor.copy(alpha = 0.85f),
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 9.sp,
-                                            letterSpacing = 1.sp
-                                        )
-                                    }
-                                }
-
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Percentage
-                                    Text(
-                                        text = "$percentageInt%",
-                                        color = valueColor,
-                                        fontWeight = FontWeight.Black,
-                                        fontSize = 14.sp,
-                                        modifier = Modifier.padding(end = 4.dp)
-                                    )
-
-                                    // Pin Widget to Android Home Screen
-                                    Box(
-                                        modifier = Modifier
-                                            .size(32.dp)
-                                            .clip(CircleShape)
-                                            .background(labelColor.copy(alpha = 0.25f))
-                                            .clickable { GoalAppWidgetProvider.pinWidgetToHomeScreen(context) },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Widgets,
-                                            contentDescription = "Pin Widget to Home Screen",
-                                            tint = labelColor,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-
-                                    // Edit Pencil
-                                    if (!isEditLocked && viewModel.hasPremium()) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .clip(CircleShape)
-                                                .background(Color.White)
-                                                .clickable { onEditFundGoal() },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Edit,
-                                                contentDescription = "Goal settings",
-                                                tint = Color.Black,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (fundGoal.targetAmount <= 0.0) {
-                                Text(
-                                    text = "Set a target when you are ready. For now, record income first.",
-                                    color = labelColor.copy(alpha = 0.85f),
-                                    fontSize = 13.sp,
-                                    lineHeight = 17.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-
-                                Button(
-                                    onClick = { onEditFundGoal() },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.buttonColors(containerColor = parseHexColor(fundGoal.btnBgColorHex, labelColor)),
-                                    shape = RoundedCornerShape(AppShape.button)
-                                ) {
-                                    Text("Set a goal", color = parseHexColor(fundGoal.btnTextColorHex, Color.White), fontWeight = FontWeight.Bold)
-                                }
-                            } else {
-                                // Value Row
-                                Column {
-                                    Text(
-                                        text = if (hideBalances) currencySymbol + "••••••" else formatRp(fundGoal.currentAmount),
-                                        color = valueColor,
-                                        fontWeight = FontWeight.Black,
-                                        fontSize = 22.sp
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = "Target: ${formatRp(fundGoal.targetAmount)}",
-                                            color = labelColor,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                        Text(
-                                            text = if (remainingAmount <= 0) "Goal reached!" else "Remaining: ${if (hideBalances) currencySymbol + "•••••" else formatRp(remainingAmount)}",
-                                            color = if (remainingAmount <= 0) Color(0xFF34D399) else labelColor,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                    }
-                                }
-
-                                // Progress Bar
-                                LinearProgressIndicator(
-                                    progress = { progressRatio },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(8.dp)
-                                        .clip(RoundedCornerShape(4.dp)),
-                                    color = labelColor,
-                                    trackColor = if (isDarkMode) Color.White.copy(alpha = 0.15f) else Color(0xFFF1F5F9)
-                                )
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    Surface(
-                                        onClick = { showGoalDepositModal = true },
-                                        shape = RoundedCornerShape(AppShape.button),
-                                        color = parseHexColor(fundGoal.btnBgColorHex, labelColor)
-                                    ) {
-                                        Text(
-                                            text = "+ Deposit",
-                                            color = parseHexColor(fundGoal.btnTextColorHex, Color.White),
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 13.sp,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                )
             }
 
             // Envelopes Header

@@ -29,17 +29,45 @@ class FundGoalAndMonetizationTest {
     }
 
     @Test
-    fun fundGoalConfig_roundTripsThroughJson() {
+    fun fundGoalConfig_roundTripsNewLookFields() {
         val original = FundGoalConfig(
             name = "Liburan",
-            targetAmount = 1_000_000.0,
-            currentAmount = 250_000.0,
-            backgroundImageUri = "file:///data/user/0/com.buckmanager.app/files/backgrounds/bg_1.jpg",
-            radiusTopLeft = 16
+            iconName = "heart",
+            iconColorHex = "#EC407A",
+            nameColorHex = "#111111",
+            nameFontFamily = "serif",
+            percentColorHex = "#10B981",
+            currentSavedColorHex = "#0F172A",
+            targetAmountColorHex = "#3673FC",
+            remainingColorHex = "#F59E0B",
+            progressTrackColorHex = "#E2E8F0",
+            progressFillColorHex = "#D4A54A"
         )
         val encoded = json.encodeToString(original)
         val decoded = json.decodeFromString<FundGoalConfig>(encoded)
         assertEquals(original, decoded)
+    }
+
+    @Test
+    fun fundGoal_legacyJsonFillsLookColorsFromAccent() {
+        val raw = """{"name":"Liburan","targetAmount":100.0,"currentAmount":10.0,"backgroundColorHex":"#111111","labelColorHex":"#D4A54A","valueColorHex":"#FFFFFF"}"""
+        val decoded = json.decodeFromString<FundGoalConfig>(raw).migrateLookFromLegacy(raw)
+        assertEquals("flag", decoded.iconName)
+        assertEquals("#D4A54A", decoded.iconColorHex)
+        assertEquals("#FFFFFF", decoded.nameColorHex)
+        assertEquals("#FFFFFF", decoded.percentColorHex)
+        assertEquals("#FFFFFF", decoded.currentSavedColorHex)
+        assertEquals("#D4A54A", decoded.targetAmountColorHex)
+        assertEquals("#D4A54A", decoded.remainingColorHex)
+        assertEquals("#D4A54A", decoded.progressFillColorHex)
+    }
+
+    @Test
+    fun fundGoal_newJsonDoesNotOverrideLookColors() {
+        val raw = """{"name":"X","labelColorHex":"#D4A54A","valueColorHex":"#FFFFFF","iconColorHex":"#111111","nameColorHex":"#222222"}"""
+        val decoded = json.decodeFromString<FundGoalConfig>(raw).migrateLookFromLegacy(raw)
+        assertEquals("#111111", decoded.iconColorHex)
+        assertEquals("#222222", decoded.nameColorHex)
     }
 
     @Test

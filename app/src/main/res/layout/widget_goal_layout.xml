@@ -86,15 +86,23 @@
                     android:textSize="12sp" />
             </LinearLayout>
 
-            <ProgressBar
-                android:id="@+id/widget_progress_bar"
-                style="?android:attr/progressBarStyleHorizontal"
+            <TextView
+                android:id="@+id/widget_remaining"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="end"
+                android:text="Remaining: Rp 0"
+                android:textColor="#D4A54A"
+                android:textSize="11sp" />
+
+            <ImageView
+                android:id="@+id/widget_progress_image"
                 android:layout_width="match_parent"
                 android:layout_height="10dp"
                 android:layout_marginTop="16dp"
-                android:max="100"
-                android:progress="0"
-                android:progressDrawable="@drawable/widget_progress_horizontal" />
+                android:scaleType="fitXY"
+                android:contentDescription="@null" />
         </LinearLayout>
 
     </RelativeLayout>

@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -357,6 +358,12 @@ fun EnvelopeAllocationSlider(colorHex: String, value: Float, onChange: (Float) -
     )
 }
 
+fun goalFontFamily(name: String): FontFamily = when (name) {
+    "serif" -> FontFamily.Serif
+    "mono" -> FontFamily.Monospace
+    else -> FontFamily.SansSerif
+}
+
 @Composable
 fun FundGoalLook(
     config: FundGoalConfig,
@@ -364,6 +371,7 @@ fun FundGoalLook(
     hideBalances: Boolean = false,
     currencySymbol: String = "Rp",
     showChrome: Boolean = false,
+    showEdit: Boolean = false,
     onDeposit: () -> Unit = {},
     onEdit: () -> Unit = {},
     onPinWidget: () -> Unit = {},
@@ -376,7 +384,18 @@ fun FundGoalLook(
     val percentageInt = (progressRatio * 100).toInt()
     val remainingAmount = (config.targetAmount - config.currentAmount).coerceAtLeast(0.0)
     val labelColor = parseHexColor(config.labelColorHex, GoldAccent)
-    val valueColor = parseHexColor(config.valueColorHex, if (isDarkMode) Color.White else Color(0xFF121926))
+    val iconColor = parseHexColor(config.iconColorHex, labelColor)
+    val nameColor = parseHexColor(config.nameColorHex, parseHexColor(config.valueColorHex, if (isDarkMode) Color.White else Color(0xFF121926)))
+    val percentColor = parseHexColor(config.percentColorHex, nameColor)
+    val currentColor = parseHexColor(config.currentSavedColorHex, nameColor)
+    val targetColor = parseHexColor(config.targetAmountColorHex, labelColor)
+    val remainingColor = parseHexColor(config.remainingColorHex, labelColor)
+    val progressFill = parseHexColor(config.progressFillColorHex, labelColor)
+    val progressTrack = parseHexColor(
+        config.progressTrackColorHex,
+        if (isDarkMode) Color.White.copy(alpha = 0.15f) else Color(0xFFF1F5F9)
+    )
+    val nameFont = goalFontFamily(config.nameFontFamily)
 
     CardShell(
         backgroundColorHex = config.backgroundColorHex,
@@ -413,18 +432,19 @@ fun FundGoalLook(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Default.Flag, contentDescription = null, tint = labelColor, modifier = Modifier.size(22.dp))
+                    Icon(getIconVector(config.iconName), contentDescription = null, tint = iconColor, modifier = Modifier.size(22.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
                             text = config.name.ifBlank { "My Goal" },
-                            color = valueColor,
+                            color = nameColor,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
+                            fontFamily = nameFont
                         )
                         Text(
                             text = "TARGET SAVINGS",
-                            color = labelColor.copy(alpha = 0.85f),
+                            color = targetColor.copy(alpha = 0.85f),
                             fontWeight = FontWeight.Bold,
                             fontSize = 9.sp,
                             letterSpacing = 1.sp
@@ -434,7 +454,7 @@ fun FundGoalLook(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "$percentageInt%",
-                        color = valueColor,
+                        color = percentColor,
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(end = 4.dp)
@@ -444,12 +464,14 @@ fun FundGoalLook(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(CircleShape)
-                                .background(labelColor.copy(alpha = 0.25f))
+                                .background(iconColor.copy(alpha = 0.25f))
                                 .clickable(onClick = onPinWidget),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Widgets, contentDescription = "Pin Widget", tint = labelColor, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Widgets, contentDescription = "Pin Widget", tint = iconColor, modifier = Modifier.size(16.dp))
                         }
+                    }
+                    if (showEdit) {
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
@@ -484,16 +506,16 @@ fun FundGoalLook(
                 Column {
                     Text(
                         text = if (hideBalances) currencySymbol + "••••••" else formatRp(config.currentAmount),
-                        color = valueColor,
+                        color = currentColor,
                         fontWeight = FontWeight.Black,
                         fontSize = 22.sp
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Target: ${formatRp(config.targetAmount)}", color = labelColor, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Text("Target: ${formatRp(config.targetAmount)}", color = targetColor, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                         Text(
                             text = if (remainingAmount <= 0) "Goal reached!" else "Remaining: ${if (hideBalances) currencySymbol + "•••••" else formatRp(remainingAmount)}",
-                            color = if (remainingAmount <= 0) Color(0xFF34D399) else labelColor,
+                            color = if (remainingAmount <= 0) Color(0xFF34D399) else remainingColor,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -502,8 +524,8 @@ fun FundGoalLook(
                 LinearProgressIndicator(
                     progress = { progressRatio },
                     modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                    color = labelColor,
-                    trackColor = if (isDarkMode) Color.White.copy(alpha = 0.15f) else Color(0xFFF1F5F9)
+                    color = progressFill,
+                    trackColor = progressTrack
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Surface(
@@ -532,7 +554,15 @@ fun GoalWidgetLook(config: FundGoalConfig, modifier: Modifier = Modifier) {
     } else 0f
     val percentageInt = (progressRatio * 100).toInt()
     val labelColor = parseHexColor(config.labelColorHex, Color(0xFFD4A54A))
-    val valueColor = parseHexColor(config.valueColorHex, Color.White)
+    val iconColor = parseHexColor(config.iconColorHex, labelColor)
+    val nameColor = parseHexColor(config.nameColorHex, parseHexColor(config.valueColorHex, Color.White))
+    val percentColor = parseHexColor(config.percentColorHex, labelColor)
+    val currentColor = parseHexColor(config.currentSavedColorHex, nameColor)
+    val targetColor = parseHexColor(config.targetAmountColorHex, labelColor)
+    val remainingColor = parseHexColor(config.remainingColorHex, labelColor)
+    val progressFill = parseHexColor(config.progressFillColorHex, labelColor)
+    val progressTrack = parseHexColor(config.progressTrackColorHex, Color.White.copy(alpha = 0.2f))
+    val nameFont = goalFontFamily(config.nameFontFamily)
 
     CardShell(
         backgroundColorHex = config.backgroundColorHex,
@@ -565,39 +595,47 @@ fun GoalWidgetLook(config: FundGoalConfig, modifier: Modifier = Modifier) {
                 )
         ) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Flag, contentDescription = null, tint = labelColor, modifier = Modifier.size(16.dp))
+                Icon(getIconVector(config.iconName), contentDescription = null, tint = iconColor, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = config.name.ifBlank { "Target Savings" },
-                    color = valueColor,
+                    color = nameColor,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
+                    fontFamily = nameFont,
                     modifier = Modifier.weight(1f),
                     maxLines = 1
                 )
-                Text(text = "$percentageInt%", color = labelColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text(text = "$percentageInt%", color = percentColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(12.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
                 Text(
                     text = formatRp(config.currentAmount),
-                    color = valueColor,
+                    color = currentColor,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "Target: ${formatRp(config.targetAmount)}",
-                    color = labelColor,
+                    color = targetColor,
                     fontSize = 12.sp
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Remaining: ${formatRp((config.targetAmount - config.currentAmount).coerceAtLeast(0.0))}",
+                color = remainingColor,
+                fontSize = 11.sp,
+                modifier = Modifier.align(Alignment.End)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
             LinearProgressIndicator(
                 progress = { progressRatio },
                 modifier = Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(4.dp)),
-                color = labelColor,
-                trackColor = Color.White.copy(alpha = 0.2f)
+                color = progressFill,
+                trackColor = progressTrack
             )
         }
     }

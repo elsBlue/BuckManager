@@ -108,7 +108,17 @@ data class FundGoalConfig(
     val gradientAngle: Float = 0f,
     val btnBgColorHex: String = "#3673FC",
     val btnTextColorHex: String = "#FFFFFF",
-    val elevation: Int = 0
+    val elevation: Int = 0,
+    val iconName: String = "flag",
+    val iconColorHex: String = "#3673FC",
+    val nameColorHex: String = "#121926",
+    val nameFontFamily: String = "sans",
+    val percentColorHex: String = "#121926",
+    val currentSavedColorHex: String = "#121926",
+    val targetAmountColorHex: String = "#3673FC",
+    val remainingColorHex: String = "#3673FC",
+    val progressTrackColorHex: String = "#F1F5F9",
+    val progressFillColorHex: String = "#3673FC"
 )
 
 @Serializable
@@ -117,6 +127,19 @@ data class MonetizationState(
     val premiumExpiryDate: Long = 0L,
     val adTickets: Int = 0
 )
+
+fun FundGoalConfig.migrateLookFromLegacy(rawJson: String): FundGoalConfig {
+    if (rawJson.contains("\"iconColorHex\"")) return this
+    return copy(
+        iconColorHex = labelColorHex,
+        nameColorHex = valueColorHex,
+        percentColorHex = valueColorHex,
+        currentSavedColorHex = valueColorHex,
+        targetAmountColorHex = labelColorHex,
+        remainingColorHex = labelColorHex,
+        progressFillColorHex = labelColorHex
+    )
+}
 
 object AuthSession {
     const val LOCAL_EMAIL = "local@buckmanager.app"
