@@ -6,11 +6,16 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
@@ -103,13 +108,24 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
         }
 
         /**
-         * Stroke is centered on the path, so inset by half the thickness or
-         * the top/bottom of the ring gets clipped off the bitmap — then
-         * centerCrop made that even worse on a wide widget.
+         * Outer corner radii in px, matching the goal card. Radius 0 stays 0.
          */
-        internal fun widgetBorderInsetPx(maxBorderDp: Int, density: Float): Float {
-            val stroke = maxBorderDp.coerceAtLeast(0) * density
-            return if (stroke > 0f) stroke / 2f else 0f
+        internal fun widgetCornerRadiiPx(config: FundGoalConfig, scale: Float): FloatArray {
+            fun r(dp: Int) = (dp * scale).coerceAtLeast(0f)
+            val tl = r(config.radiusTopLeft)
+            val tr = r(config.radiusTopRight)
+            val br = r(config.radiusBottomRight)
+            val bl = r(config.radiusBottomLeft)
+            return floatArrayOf(tl, tl, tr, tr, br, br, bl, bl)
+        }
+
+        internal fun widgetOutlineRadiusDp(config: FundGoalConfig): Float {
+            return maxOf(
+                config.radiusTopLeft,
+                config.radiusTopRight,
+                config.radiusBottomRight,
+                config.radiusBottomLeft
+            ).coerceAtLeast(0).toFloat()
         }
 
         private fun generateWidgetBackground(
@@ -122,50 +138,45 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
             val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(bitmap)
             val scale = pxPerDp.coerceAtLeast(0.5f)
+            val aa = 0.5f
 
-            val maxBorderDp = maxOf(config.borderTop, config.borderBottom, config.borderLeft, config.borderRight)
-            val stroke = maxBorderDp * scale
-            val inset = widgetBorderInsetPx(maxBorderDp, scale)
+            val outer = RectF(aa, aa, width - aa, height - aa)
+            val radii = widgetCornerRadiiPx(config, scale)
+            val outerPath = Path()
+            outerPath.addRoundRect(outer, radii, Path.Direction.CW)
 
-            val radii = floatArrayOf(
-                (config.radiusTopLeft * scale - inset).coerceAtLeast(0f),
-                (config.radiusTopLeft * scale - inset).coerceAtLeast(0f),
-                (config.radiusTopRight * scale - inset).coerceAtLeast(0f),
-                (config.radiusTopRight * scale - inset).coerceAtLeast(0f),
-                (config.radiusBottomRight * scale - inset).coerceAtLeast(0f),
-                (config.radiusBottomRight * scale - inset).coerceAtLeast(0f),
-                (config.radiusBottomLeft * scale - inset).coerceAtLeast(0f),
-                (config.radiusBottomLeft * scale - inset).coerceAtLeast(0f)
-            )
-            val rect = android.graphics.RectF(
-                inset,
-                inset,
-                width - inset,
-                height - inset
-            )
-            val path = android.graphics.Path()
-            path.addRoundRect(rect, radii, android.graphics.Path.Direction.CW)
-
-            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             paint.color = try {
                 android.graphics.Color.parseColor(config.backgroundColorHex)
             } catch (e: Exception) {
                 android.graphics.Color.parseColor("#181C26")
             }
-            paint.style = android.graphics.Paint.Style.FILL
+            paint.style = Paint.Style.FILL
 
             if (config.useGradient && config.gradientColors.isNotEmpty()) {
                 try {
-                    val colors = config.gradientColors.map { android.graphics.Color.parseColor(it) }.toIntArray()
-                    val shader = android.graphics.LinearGradient(
-                        0f, 0f, width.toFloat(), height.toFloat(), colors, null, android.graphics.Shader.TileMode.CLAMP
+                    val parsed = config.gradientColors.map { android.graphics.Color.parseColor(it) }
+                    val colors = if (parsed.size == 1) intArrayOf(parsed[0], parsed[0]) else parsed.toIntArray()
+                    val angleRad = (config.gradientAngle % 360f) * (Math.PI / 180.0)
+                    val cx = width / 2f
+                    val cy = height / 2f
+                    val radius = kotlin.math.sqrt((width / 2.0) * (width / 2.0) + (height / 2.0) * (height / 2.0))
+                    val shader = LinearGradient(
+                        (cx - radius * kotlin.math.cos(angleRad)).toFloat(),
+                        (cy - radius * kotlin.math.sin(angleRad)).toFloat(),
+                        (cx + radius * kotlin.math.cos(angleRad)).toFloat(),
+                        (cy + radius * kotlin.math.sin(angleRad)).toFloat(),
+                        colors,
+                        null,
+                        Shader.TileMode.CLAMP
                     )
                     paint.shader = shader
-                } catch (e: Exception) {
-                }
+                } catch (_: Exception) {}
             }
 
-            canvas.drawPath(path, paint)
+            canvas.save()
+            canvas.clipPath(outerPath)
+            canvas.drawPath(outerPath, paint)
 
             if (!config.backgroundImageUri.isNullOrBlank()) {
                 try {
@@ -173,16 +184,11 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                     val bgBmp = android.graphics.BitmapFactory.decodeStream(inputStream)
                     inputStream?.close()
                     if (bgBmp != null) {
-                        canvas.save()
-                        canvas.clipPath(path)
-                        val srcRect = android.graphics.Rect(0, 0, bgBmp.width, bgBmp.height)
-                        canvas.drawBitmap(bgBmp, srcRect, android.graphics.Rect(0, 0, width, height), null)
-                        canvas.restore()
-
+                        canvas.drawBitmap(bgBmp, coverSrcRect(bgBmp.width, bgBmp.height, width, height), Rect(0, 0, width, height), null)
                         if (config.dimOpacity > 0) {
-                            val dimPaint = android.graphics.Paint()
-                            dimPaint.color = android.graphics.Color.argb((config.dimOpacity * 2.55).toInt(), 0, 0, 0)
-                            canvas.drawPath(path, dimPaint)
+                            val dimPaint = Paint()
+                            dimPaint.color = android.graphics.Color.argb((config.dimOpacity * 2.55).toInt().coerceIn(0, 255), 0, 0, 0)
+                            canvas.drawPath(outerPath, dimPaint)
                         }
                     }
                 } catch (e: Exception) {
@@ -190,22 +196,61 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 }
             }
 
-            if (stroke > 0f) {
-                val strokePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
-                strokePaint.color = try {
-                    android.graphics.Color.parseColor(config.borderColorHex)
-                } catch (e: Exception) {
-                    android.graphics.Color.TRANSPARENT
+            val topPx = config.borderTop * scale
+            val rightPx = config.borderRight * scale
+            val bottomPx = config.borderBottom * scale
+            val leftPx = config.borderLeft * scale
+            if (topPx > 0f || rightPx > 0f || bottomPx > 0f || leftPx > 0f) {
+                val inner = RectF(
+                    outer.left + leftPx,
+                    outer.top + topPx,
+                    outer.right - rightPx,
+                    outer.bottom - bottomPx
+                )
+                if (inner.width() > 1f && inner.height() > 1f) {
+                    val innerRadii = floatArrayOf(
+                        (radii[0] - leftPx).coerceAtLeast(0f),
+                        (radii[1] - topPx).coerceAtLeast(0f),
+                        (radii[2] - rightPx).coerceAtLeast(0f),
+                        (radii[3] - topPx).coerceAtLeast(0f),
+                        (radii[4] - rightPx).coerceAtLeast(0f),
+                        (radii[5] - bottomPx).coerceAtLeast(0f),
+                        (radii[6] - leftPx).coerceAtLeast(0f),
+                        (radii[7] - bottomPx).coerceAtLeast(0f)
+                    )
+                    val innerPath = Path()
+                    innerPath.addRoundRect(inner, innerRadii, Path.Direction.CW)
+                    val borderPath = Path()
+                    borderPath.op(outerPath, innerPath, Path.Op.DIFFERENCE)
+                    val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+                    borderPaint.style = Paint.Style.FILL
+                    borderPaint.color = try {
+                        android.graphics.Color.parseColor(config.borderColorHex)
+                    } catch (_: Exception) {
+                        android.graphics.Color.TRANSPARENT
+                    }
+                    canvas.drawPath(borderPath, borderPaint)
                 }
-                strokePaint.style = android.graphics.Paint.Style.STROKE
-                strokePaint.strokeWidth = stroke
-                strokePaint.strokeJoin = Paint.Join.ROUND
-                strokePaint.strokeCap = Paint.Cap.ROUND
-                canvas.drawPath(path, strokePaint)
             }
 
-            drawWidgetForeground(context, canvas, config, width, height, scale, inset)
+            drawWidgetForeground(context, canvas, config, width, height, scale)
+            canvas.restore()
             return bitmap
+        }
+
+        private fun coverSrcRect(srcW: Int, srcH: Int, dstW: Int, dstH: Int): Rect {
+            if (srcW <= 0 || srcH <= 0 || dstW <= 0 || dstH <= 0) return Rect(0, 0, srcW.coerceAtLeast(1), srcH.coerceAtLeast(1))
+            val srcAspect = srcW.toFloat() / srcH
+            val dstAspect = dstW.toFloat() / dstH
+            return if (srcAspect > dstAspect) {
+                val newW = (srcH * dstAspect).toInt().coerceAtLeast(1)
+                val left = ((srcW - newW) / 2).coerceAtLeast(0)
+                Rect(left, 0, (left + newW).coerceAtMost(srcW), srcH)
+            } else {
+                val newH = (srcW / dstAspect).toInt().coerceAtLeast(1)
+                val top = ((srcH - newH) / 2).coerceAtLeast(0)
+                Rect(0, top, srcW, (top + newH).coerceAtMost(srcH))
+            }
         }
 
         private fun drawWidgetForeground(
@@ -214,8 +259,7 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
             config: FundGoalConfig,
             width: Int,
             height: Int,
-            scale: Float,
-            inset: Float
+            scale: Float
         ) {
             fun parseOr(hex: String, fallback: Int): Int = try {
                 android.graphics.Color.parseColor(hex)
@@ -231,10 +275,10 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
             val fillColor = parseOr(config.progressFillColorHex, labelColor)
             val trackColor = parseOr(config.progressTrackColorHex, android.graphics.Color.parseColor("#40808080"))
 
-            val padL = config.paddingLeft * scale + inset
-            val padT = config.paddingTop * scale + inset
-            val padR = config.paddingRight * scale + inset
-            val padB = config.paddingBottom * scale + inset
+            val padL = config.paddingLeft * scale
+            val padT = config.paddingTop * scale
+            val padR = config.paddingRight * scale
+            val padB = config.paddingBottom * scale
             val left = padL
             val right = width - padR
             val top = padT
@@ -244,8 +288,8 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
             val titlePaint = textPaint(nameColor, 14f * scale, 700, config.nameFontFamily)
             val percentPaint = textPaint(percentColor, 14f * scale, 900)
             val amountPaint = textPaint(currentColor, 22f * scale, 900)
-            val targetPaint = textPaint(targetColor, 12f * scale, 500)
-            val remainingPaint = textPaint(remainingColor, 12f * scale, 600)
+            val targetPaint = textPaint(targetColor, 12f * scale, 400)
+            val remainingPaint = textPaint(remainingColor, 12f * scale, 400)
             remainingPaint.textAlign = Paint.Align.RIGHT
 
             val headerH = rowHeight(titlePaint).coerceAtLeast(16f * scale)
@@ -327,7 +371,7 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 Typeface.create(family, weight.coerceIn(100, 900), false)
             } else if (weight >= 800) {
                 Typeface.create("sans-serif-black", Typeface.NORMAL)
-            } else if (weight >= 600) {
+            } else if (weight >= 700) {
                 Typeface.create(family, Typeface.BOLD)
             } else {
                 Typeface.create(family, Typeface.NORMAL)
@@ -386,6 +430,7 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 views.setOnClickPendingIntent(R.id.widget_root, appPendingIntent)
+                applyWidgetOutline(views, fundGoal)
 
                 try {
                     val (bw, bh, pxPerDp) = widgetPixelSize(context, appWidgetManager, appWidgetId)
@@ -401,6 +446,18 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                     } catch (_: Exception) {}
                 }
             }
+        }
+
+        private fun applyWidgetOutline(views: RemoteViews, config: FundGoalConfig) {
+            val radiusDp = widgetOutlineRadiusDp(config)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                views.setViewOutlinePreferredRadius(R.id.widget_root, radiusDp, TypedValue.COMPLEX_UNIT_DIP)
+                views.setViewOutlinePreferredRadius(R.id.widget_card_image, radiusDp, TypedValue.COMPLEX_UNIT_DIP)
+            }
+            try {
+                views.setBoolean(R.id.widget_root, "setClipToOutline", radiusDp > 0f)
+                views.setBoolean(R.id.widget_card_image, "setClipToOutline", radiusDp > 0f)
+            } catch (_: Exception) {}
         }
 
         fun pinWidgetToHomeScreen(context: Context) {

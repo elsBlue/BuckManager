@@ -512,12 +512,12 @@ fun FundGoalLook(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Target ${formatRp(config.targetAmount)}", color = targetColor, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Text("Target ${formatRp(config.targetAmount)}", color = targetColor, fontSize = 12.sp, fontWeight = FontWeight.Normal)
                         Text(
                             text = if (remainingAmount <= 0) "Goal reached!" else "Remaining ${if (hideBalances) currencySymbol + "•••••" else formatRp(remainingAmount)}",
                             color = if (remainingAmount <= 0) Color(0xFF34D399) else remainingColor,
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Normal
                         )
                     }
                 }
@@ -627,7 +627,7 @@ fun GoalWidgetLook(config: FundGoalConfig, modifier: Modifier = Modifier) {
                     text = "Target ${formatRp(config.targetAmount)}",
                     color = targetColor,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.Normal,
                     maxLines = 1,
                     modifier = Modifier.weight(1f).padding(end = 8.dp)
                 )
@@ -635,7 +635,7 @@ fun GoalWidgetLook(config: FundGoalConfig, modifier: Modifier = Modifier) {
                     text = if (remainingAmount <= 0) "Goal reached!" else "Remaining ${formatRp(remainingAmount)}",
                     color = remainingColor,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Normal,
                     maxLines = 1
                 )
             }

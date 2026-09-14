@@ -109,13 +109,29 @@ class FundGoalAndMonetizationTest {
     }
 
     @Test
-    fun widgetBorderInset_keepsFullStrokeInsideBitmap() {
-        val density = 2.75f
-        val borderDp = 6
-        val stroke = borderDp * density
-        val inset = stroke / 2f
-        assertEquals(0f, inset - stroke / 2f, 0.001f)
-        assertTrue(inset + stroke / 2f < 300f)
+    fun widgetRadii_zeroStaysZeroAndFollowsEachCorner() {
+        val square = FundGoalConfig(
+            radiusTopLeft = 0,
+            radiusTopRight = 0,
+            radiusBottomRight = 0,
+            radiusBottomLeft = 0
+        )
+        val zero = com.buckmanager.app.widget.GoalAppWidgetProvider.widgetCornerRadiiPx(square, 3.5f)
+        zero.forEach { assertEquals(0f, it, 0f) }
+        assertEquals(0f, com.buckmanager.app.widget.GoalAppWidgetProvider.widgetOutlineRadiusDp(square), 0f)
+
+        val mixed = FundGoalConfig(
+            radiusTopLeft = 0,
+            radiusTopRight = 12,
+            radiusBottomRight = 21,
+            radiusBottomLeft = 8
+        )
+        val radii = com.buckmanager.app.widget.GoalAppWidgetProvider.widgetCornerRadiiPx(mixed, 2f)
+        assertEquals(0f, radii[0], 0f)
+        assertEquals(24f, radii[2], 0f)
+        assertEquals(42f, radii[4], 0f)
+        assertEquals(16f, radii[6], 0f)
+        assertEquals(21f, com.buckmanager.app.widget.GoalAppWidgetProvider.widgetOutlineRadiusDp(mixed), 0f)
     }
 
     @Test
