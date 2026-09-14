@@ -600,13 +600,13 @@ fun GoalWidgetLook(config: FundGoalConfig, modifier: Modifier = Modifier) {
                 Text(
                     text = config.name.ifBlank { "Target Savings" },
                     color = nameColor,
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = nameFont,
                     modifier = Modifier.weight(1f),
                     maxLines = 1
                 )
-                Text(text = "$percentageInt%", color = percentColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text(text = "$percentageInt%", color = percentColor, fontSize = 14.sp, fontWeight = FontWeight.Black)
             }
             Spacer(modifier = Modifier.height(12.dp))
             val remainingAmount = (config.targetAmount - config.currentAmount).coerceAtLeast(0.0)
@@ -614,7 +614,7 @@ fun GoalWidgetLook(config: FundGoalConfig, modifier: Modifier = Modifier) {
                 text = formatRp(config.currentAmount),
                 color = currentColor,
                 fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Black,
                 maxLines = 1
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -627,6 +627,7 @@ fun GoalWidgetLook(config: FundGoalConfig, modifier: Modifier = Modifier) {
                     text = "Target ${formatRp(config.targetAmount)}",
                     color = targetColor,
                     fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
                     maxLines = 1,
                     modifier = Modifier.weight(1f).padding(end = 8.dp)
                 )
@@ -634,6 +635,7 @@ fun GoalWidgetLook(config: FundGoalConfig, modifier: Modifier = Modifier) {
                     text = if (remainingAmount <= 0) "Goal reached!" else "Remaining ${formatRp(remainingAmount)}",
                     color = remainingColor,
                     fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
                     maxLines = 1
                 )
             }

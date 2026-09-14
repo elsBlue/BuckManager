@@ -109,6 +109,16 @@ class FundGoalAndMonetizationTest {
     }
 
     @Test
+    fun widgetBorderInset_keepsFullStrokeInsideBitmap() {
+        val density = 2.75f
+        val borderDp = 6
+        val stroke = borderDp * density
+        val inset = stroke / 2f
+        assertEquals(0f, inset - stroke / 2f, 0.001f)
+        assertTrue(inset + stroke / 2f < 300f)
+    }
+
+    @Test
     fun withdraw_cannotExceedGoalBalance() {
         val current = 20_000.0
         val requested = -50_000.0

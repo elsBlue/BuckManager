@@ -8,7 +8,7 @@
         android:id="@+id/widget_bg_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
+        android:scaleType="fitXY"
         android:contentDescription="@null" />
 
     <RelativeLayout
@@ -45,8 +45,11 @@
                     android:layout_height="wrap_content"
                     android:text="Target Savings"
                     android:textColor="#FFFFFF"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
+                    android:fontFamily="sans-serif"
+                    android:textFontWeight="700"
+                    android:includeFontPadding="false"
                     android:singleLine="true" />
 
                 <TextView
@@ -56,7 +59,9 @@
                     android:text="0%"
                     android:textColor="#D4A54A"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:fontFamily="sans-serif-black"
+                    android:textFontWeight="900"
+                    android:includeFontPadding="false" />
             </LinearLayout>
 
             <TextView
@@ -67,7 +72,9 @@
                 android:text="Rp 0"
                 android:textColor="#FFFFFF"
                 android:textSize="22sp"
-                android:textStyle="bold"
+                android:fontFamily="sans-serif-black"
+                android:textFontWeight="900"
+                android:includeFontPadding="false"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -88,6 +95,9 @@
                     android:text="Target Rp 0"
                     android:textColor="#8B92A5"
                     android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textFontWeight="500"
+                    android:includeFontPadding="false"
                     android:maxLines="1"
                     android:ellipsize="end" />
 
@@ -98,6 +108,9 @@
                     android:text="Remaining Rp 0"
                     android:textColor="#D4A54A"
                     android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textFontWeight="600"
+                    android:includeFontPadding="false"
                     android:gravity="end"
                     android:maxLines="1"
                     android:ellipsize="end" />

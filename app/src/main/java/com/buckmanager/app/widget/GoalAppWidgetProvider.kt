@@ -6,6 +6,8 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Paint
+import android.os.Bundle
 import android.widget.RemoteViews
 import com.buckmanager.app.MainActivity
 import com.buckmanager.app.R
@@ -59,26 +61,69 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
             }
         }
 
-        private fun generateWidgetBackground(context: Context, config: FundGoalConfig): android.graphics.Bitmap {
-            val width = 600
-            val height = 300
+        internal fun widgetPixelSize(
+            context: Context,
+            appWidgetManager: AppWidgetManager,
+            appWidgetId: Int
+        ): Pair<Int, Int> {
+            val density = context.resources.displayMetrics.density
+            var wDp = 260
+            var hDp = 118
+            try {
+                val opts = appWidgetManager.getAppWidgetOptions(appWidgetId)
+                val minW = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+                val maxW = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0)
+                val minH = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+                val maxH = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0)
+                if (maxW > 0 || minW > 0) wDp = maxOf(maxW, minW)
+                if (maxH > 0 || minH > 0) hDp = maxOf(maxH, minH)
+            } catch (_: Exception) {}
+            val w = (wDp * density).toInt().coerceIn(480, 1600)
+            val h = (hDp * density).toInt().coerceIn(220, 900)
+            return w to h
+        }
+
+        /**
+         * Stroke is centered on the path, so inset by half the thickness or
+         * the top/bottom of the ring gets clipped off the bitmap — then
+         * centerCrop made that even worse on a wide widget.
+         */
+        internal fun widgetBorderInsetPx(maxBorderDp: Int, density: Float): Float {
+            val stroke = maxBorderDp.coerceAtLeast(0) * density
+            return if (stroke > 0f) stroke / 2f else 0f
+        }
+
+        private fun generateWidgetBackground(
+            context: Context,
+            config: FundGoalConfig,
+            width: Int,
+            height: Int
+        ): android.graphics.Bitmap {
             val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(bitmap)
+            val density = context.resources.displayMetrics.density
 
-            val density = 2.5f
-            val radiusTopLeft = config.radiusTopLeft * density
-            val radiusTopRight = config.radiusTopRight * density
-            val radiusBottomRight = config.radiusBottomRight * density
-            val radiusBottomLeft = config.radiusBottomLeft * density
+            val maxBorderDp = maxOf(config.borderTop, config.borderBottom, config.borderLeft, config.borderRight)
+            val stroke = maxBorderDp * density
+            val inset = widgetBorderInsetPx(maxBorderDp, density)
 
-            val path = android.graphics.Path()
             val radii = floatArrayOf(
-                radiusTopLeft, radiusTopLeft,
-                radiusTopRight, radiusTopRight,
-                radiusBottomRight, radiusBottomRight,
-                radiusBottomLeft, radiusBottomLeft
+                (config.radiusTopLeft * density - inset).coerceAtLeast(0f),
+                (config.radiusTopLeft * density - inset).coerceAtLeast(0f),
+                (config.radiusTopRight * density - inset).coerceAtLeast(0f),
+                (config.radiusTopRight * density - inset).coerceAtLeast(0f),
+                (config.radiusBottomRight * density - inset).coerceAtLeast(0f),
+                (config.radiusBottomRight * density - inset).coerceAtLeast(0f),
+                (config.radiusBottomLeft * density - inset).coerceAtLeast(0f),
+                (config.radiusBottomLeft * density - inset).coerceAtLeast(0f)
             )
-            val rect = android.graphics.RectF(0f, 0f, width.toFloat(), height.toFloat())
+            val rect = android.graphics.RectF(
+                inset,
+                inset,
+                width - inset,
+                height - inset
+            )
+            val path = android.graphics.Path()
             path.addRoundRect(rect, radii, android.graphics.Path.Direction.CW)
 
             val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
@@ -125,8 +170,7 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 }
             }
 
-            val maxStroke = maxOf(config.borderTop, config.borderBottom, config.borderLeft, config.borderRight) * density
-            if (maxStroke > 0) {
+            if (stroke > 0f) {
                 val strokePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
                 strokePaint.color = try {
                     android.graphics.Color.parseColor(config.borderColorHex)
@@ -134,7 +178,9 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                     android.graphics.Color.TRANSPARENT
                 }
                 strokePaint.style = android.graphics.Paint.Style.STROKE
-                strokePaint.strokeWidth = maxStroke
+                strokePaint.strokeWidth = stroke
+                strokePaint.strokeJoin = Paint.Join.ROUND
+                strokePaint.strokeCap = Paint.Cap.ROUND
                 canvas.drawPath(path, strokePaint)
             }
 
@@ -173,6 +219,7 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 views.setTextColor(R.id.widget_remaining, remainingColor)
                 views.setImageViewResource(R.id.widget_title_icon, goalIconRes(fundGoal.iconName))
                 views.setInt(R.id.widget_title_icon, "setColorFilter", iconColor)
+                applyWidgetNameFamily(views, fundGoal.nameFontFamily)
 
                 val progressRatio = if (fundGoal.targetAmount > 0) {
                     (fundGoal.currentAmount / fundGoal.targetAmount).coerceIn(0.0, 1.0)
@@ -196,7 +243,8 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 }
 
                 try {
-                    val bitmap = generateWidgetBackground(context, fundGoal)
+                    val (bw, bh) = widgetPixelSize(context, appWidgetManager, appWidgetId)
+                    val bitmap = generateWidgetBackground(context, fundGoal, bw, bh)
                     views.setImageViewBitmap(R.id.widget_bg_image, bitmap)
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -215,6 +263,17 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
 
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             }
+        }
+
+        private fun applyWidgetNameFamily(views: RemoteViews, name: String) {
+            val family = when (name) {
+                "serif" -> "serif"
+                "mono", "monospace" -> "monospace"
+                else -> "sans-serif"
+            }
+            try {
+                views.setString(R.id.widget_title, "setFontFamily", family)
+            } catch (_: Exception) {}
         }
 
         fun pinWidgetToHomeScreen(context: Context) {
@@ -270,5 +329,14 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
+    }
+
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: Bundle?
+    ) {
+        updateAppWidget(context, appWidgetManager, appWidgetId)
     }
 }
