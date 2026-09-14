@@ -119,6 +119,22 @@ class FundGoalAndMonetizationTest {
     }
 
     @Test
+    fun widgetCanvas_staysUnderBinderSafePixelCap() {
+        val cases = listOf(
+            250 to 110,
+            360 to 130,
+            400 to 180,
+            260 to 118
+        )
+        for ((wDp, hDp) in cases) {
+            val (w, h) = com.buckmanager.app.widget.GoalAppWidgetProvider.widgetCanvasSize(wDp, hDp)
+            assertTrue("$wDp x $hDp -> $w x $h", w * h <= com.buckmanager.app.widget.GoalAppWidgetProvider.MAX_WIDGET_BG_PIXELS)
+            assertTrue(w >= 320)
+            assertTrue(h >= 140)
+        }
+    }
+
+    @Test
     fun withdraw_cannotExceedGoalBalance() {
         val current = 20_000.0
         val requested = -50_000.0

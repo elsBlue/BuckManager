@@ -61,12 +61,26 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
             }
         }
 
+        internal const val MAX_WIDGET_BG_PIXELS = 600 * 280
+
+        internal fun widgetCanvasSize(wDp: Int, hDp: Int): Pair<Int, Int> {
+            val aspect = (wDp.coerceAtLeast(1).toFloat() / hDp.coerceAtLeast(1).toFloat()).coerceIn(1.2f, 4.5f)
+            var width = kotlin.math.sqrt(MAX_WIDGET_BG_PIXELS * aspect).toInt().coerceIn(400, 720)
+            var height = (width / aspect).toInt().coerceIn(160, 360)
+            val pixels = width * height
+            if (pixels > MAX_WIDGET_BG_PIXELS) {
+                val scale = kotlin.math.sqrt(MAX_WIDGET_BG_PIXELS.toFloat() / pixels)
+                width = (width * scale).toInt().coerceAtLeast(320)
+                height = (height * scale).toInt().coerceAtLeast(140)
+            }
+            return width to height
+        }
+
         internal fun widgetPixelSize(
             context: Context,
             appWidgetManager: AppWidgetManager,
             appWidgetId: Int
-        ): Pair<Int, Int> {
-            val density = context.resources.displayMetrics.density
+        ): Triple<Int, Int, Float> {
             var wDp = 260
             var hDp = 118
             try {
@@ -78,9 +92,9 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 if (maxW > 0 || minW > 0) wDp = maxOf(maxW, minW)
                 if (maxH > 0 || minH > 0) hDp = maxOf(maxH, minH)
             } catch (_: Exception) {}
-            val w = (wDp * density).toInt().coerceIn(480, 1600)
-            val h = (hDp * density).toInt().coerceIn(220, 900)
-            return w to h
+            val (width, height) = widgetCanvasSize(wDp, hDp)
+            val pxPerDp = width / wDp.coerceAtLeast(1).toFloat()
+            return Triple(width, height, pxPerDp)
         }
 
         /**
@@ -97,25 +111,26 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
             context: Context,
             config: FundGoalConfig,
             width: Int,
-            height: Int
+            height: Int,
+            pxPerDp: Float
         ): android.graphics.Bitmap {
             val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(bitmap)
-            val density = context.resources.displayMetrics.density
+            val scale = pxPerDp.coerceAtLeast(0.5f)
 
             val maxBorderDp = maxOf(config.borderTop, config.borderBottom, config.borderLeft, config.borderRight)
-            val stroke = maxBorderDp * density
-            val inset = widgetBorderInsetPx(maxBorderDp, density)
+            val stroke = maxBorderDp * scale
+            val inset = widgetBorderInsetPx(maxBorderDp, scale)
 
             val radii = floatArrayOf(
-                (config.radiusTopLeft * density - inset).coerceAtLeast(0f),
-                (config.radiusTopLeft * density - inset).coerceAtLeast(0f),
-                (config.radiusTopRight * density - inset).coerceAtLeast(0f),
-                (config.radiusTopRight * density - inset).coerceAtLeast(0f),
-                (config.radiusBottomRight * density - inset).coerceAtLeast(0f),
-                (config.radiusBottomRight * density - inset).coerceAtLeast(0f),
-                (config.radiusBottomLeft * density - inset).coerceAtLeast(0f),
-                (config.radiusBottomLeft * density - inset).coerceAtLeast(0f)
+                (config.radiusTopLeft * scale - inset).coerceAtLeast(0f),
+                (config.radiusTopLeft * scale - inset).coerceAtLeast(0f),
+                (config.radiusTopRight * scale - inset).coerceAtLeast(0f),
+                (config.radiusTopRight * scale - inset).coerceAtLeast(0f),
+                (config.radiusBottomRight * scale - inset).coerceAtLeast(0f),
+                (config.radiusBottomRight * scale - inset).coerceAtLeast(0f),
+                (config.radiusBottomLeft * scale - inset).coerceAtLeast(0f),
+                (config.radiusBottomLeft * scale - inset).coerceAtLeast(0f)
             )
             val rect = android.graphics.RectF(
                 inset,
@@ -219,7 +234,6 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 views.setTextColor(R.id.widget_remaining, remainingColor)
                 views.setImageViewResource(R.id.widget_title_icon, goalIconRes(fundGoal.iconName))
                 views.setInt(R.id.widget_title_icon, "setColorFilter", iconColor)
-                applyWidgetNameFamily(views, fundGoal.nameFontFamily)
 
                 val progressRatio = if (fundGoal.targetAmount > 0) {
                     (fundGoal.currentAmount / fundGoal.targetAmount).coerceIn(0.0, 1.0)
@@ -243,8 +257,8 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 }
 
                 try {
-                    val (bw, bh) = widgetPixelSize(context, appWidgetManager, appWidgetId)
-                    val bitmap = generateWidgetBackground(context, fundGoal, bw, bh)
+                    val (bw, bh, pxPerDp) = widgetPixelSize(context, appWidgetManager, appWidgetId)
+                    val bitmap = generateWidgetBackground(context, fundGoal, bw, bh, pxPerDp)
                     views.setImageViewBitmap(R.id.widget_bg_image, bitmap)
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -261,19 +275,19 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 )
                 views.setOnClickPendingIntent(R.id.widget_root, appPendingIntent)
 
-                appWidgetManager.updateAppWidget(appWidgetId, views)
+                try {
+                    appWidgetManager.updateAppWidget(appWidgetId, views)
+                } catch (e: RuntimeException) {
+                    e.printStackTrace()
+                    val fallback = RemoteViews(context.packageName, R.layout.widget_goal_layout)
+                    fallback.setTextViewText(R.id.widget_title, name)
+                    fallback.setTextViewText(R.id.widget_current_amount, formatRp(fundGoal.currentAmount))
+                    fallback.setOnClickPendingIntent(R.id.widget_root, appPendingIntent)
+                    try {
+                        appWidgetManager.updateAppWidget(appWidgetId, fallback)
+                    } catch (_: Exception) {}
+                }
             }
-        }
-
-        private fun applyWidgetNameFamily(views: RemoteViews, name: String) {
-            val family = when (name) {
-                "serif" -> "serif"
-                "mono", "monospace" -> "monospace"
-                else -> "sans-serif"
-            }
-            try {
-                views.setString(R.id.widget_title, "setFontFamily", family)
-            } catch (_: Exception) {}
         }
 
         fun pinWidgetToHomeScreen(context: Context) {
@@ -306,8 +320,8 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
         }
 
         private fun progressBitmap(fill: Int, track: Int, ratio: Float): android.graphics.Bitmap {
-            val width = 600
-            val height = 20
+            val width = 400
+            val height = 12
             val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(bitmap)
             val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
