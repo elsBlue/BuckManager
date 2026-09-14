@@ -7,8 +7,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
-import android.graphics.Typeface
-import android.os.Build
 import android.os.Bundle
 import android.widget.RemoteViews
 import com.buckmanager.app.MainActivity
@@ -211,6 +209,8 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 val views = RemoteViews(context.packageName, R.layout.widget_goal_layout)
 
                 val name = fundGoal.name.ifBlank { "Target Savings" }
+                views.setTextViewText(R.id.widget_title, name)
+                views.setTextViewText(R.id.widget_current_amount, formatRp(fundGoal.currentAmount))
                 views.setTextViewText(R.id.widget_target_amount, "Target ${formatRp(fundGoal.targetAmount)}")
 
                 fun parseOr(hex: String, fallback: Int): Int = try {
@@ -227,6 +227,9 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 val fillColor = parseOr(fundGoal.progressFillColorHex, labelColor)
                 val trackColor = parseOr(fundGoal.progressTrackColorHex, android.graphics.Color.parseColor("#40808080"))
 
+                views.setTextColor(R.id.widget_title, nameColor)
+                views.setTextColor(R.id.widget_current_amount, currentColor)
+                views.setTextColor(R.id.widget_percentage, percentColor)
                 views.setTextColor(R.id.widget_target_amount, targetColor)
                 views.setTextColor(R.id.widget_remaining, remainingColor)
                 views.setImageViewResource(R.id.widget_title_icon, goalIconRes(fundGoal.iconName))
@@ -237,39 +240,15 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 } else 0.0
                 val percentageInt = (progressRatio * 100).toInt()
                 val remainingAmount = (fundGoal.targetAmount - fundGoal.currentAmount).coerceAtLeast(0.0)
+                views.setTextViewText(R.id.widget_percentage, "${percentageInt}%")
                 views.setTextViewText(
                     R.id.widget_remaining,
                     if (remainingAmount <= 0) "Goal reached!" else "Remaining ${formatRp(remainingAmount)}"
                 )
-                val density = context.resources.displayMetrics.density
-                val scaled = context.resources.displayMetrics.scaledDensity
-                val contentWidthPx = run {
-                    val optsW = try {
-                        val opts = appWidgetManager.getAppWidgetOptions(appWidgetId)
-                        maxOf(
-                            opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0),
-                            opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0)
-                        )
-                    } catch (_: Exception) { 0 }
-                    val wDp = if (optsW > 0) optsW else 260
-                    val pad = (fundGoal.paddingLeft + fundGoal.paddingRight).coerceAtLeast(26)
-                    ((wDp - pad) * density).toInt().coerceAtLeast(180)
-                }
-                views.setImageViewBitmap(
-                    R.id.widget_title,
-                    textBitmap(name, nameColor, 16f * scaled, 700, (contentWidthPx - 40 * density).toInt())
-                )
-                views.setImageViewBitmap(
-                    R.id.widget_percentage,
-                    textBitmap("${percentageInt}%", percentColor, 14f * scaled, 900, (72 * density).toInt())
-                )
-                views.setImageViewBitmap(
-                    R.id.widget_current_amount,
-                    textBitmap(formatRp(fundGoal.currentAmount), currentColor, 22f * scaled, 900, contentWidthPx)
-                )
                 views.setImageViewBitmap(R.id.widget_progress_image, progressBitmap(fillColor, trackColor, progressRatio.toFloat()))
 
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    val density = context.resources.displayMetrics.density
                     val pt = (fundGoal.paddingTop * density).toInt()
                     val pr = (fundGoal.paddingRight * density).toInt()
                     val pb = (fundGoal.paddingBottom * density).toInt()
@@ -301,6 +280,8 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 } catch (e: RuntimeException) {
                     e.printStackTrace()
                     val fallback = RemoteViews(context.packageName, R.layout.widget_goal_layout)
+                    fallback.setTextViewText(R.id.widget_title, name)
+                    fallback.setTextViewText(R.id.widget_current_amount, formatRp(fundGoal.currentAmount))
                     fallback.setOnClickPendingIntent(R.id.widget_root, appPendingIntent)
                     try {
                         appWidgetManager.updateAppWidget(appWidgetId, fallback)
@@ -336,54 +317,6 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
             "car" -> R.drawable.ic_car
             "book" -> R.drawable.ic_book
             else -> R.drawable.ic_flag
-        }
-
-        private fun typefaceForWeight(weight: Int): Typeface {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                Typeface.create(Typeface.SANS_SERIF, weight.coerceIn(100, 900), false)
-            } else if (weight >= 800) {
-                Typeface.create("sans-serif-black", Typeface.NORMAL)
-            } else if (weight >= 600) {
-                Typeface.create("sans-serif", Typeface.BOLD)
-            } else if (weight >= 500) {
-                Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            } else {
-                Typeface.create("sans-serif", Typeface.NORMAL)
-            }
-        }
-
-        internal fun ellipsizeToWidth(text: String, paint: Paint, maxWidth: Int): String {
-            if (maxWidth <= 0 || paint.measureText(text) <= maxWidth) return text
-            val ellipsis = "…"
-            var end = text.length
-            while (end > 0 && paint.measureText(text.take(end) + ellipsis) > maxWidth) {
-                end--
-            }
-            return if (end <= 0) ellipsis else text.take(end) + ellipsis
-        }
-
-        private fun textBitmap(
-            text: String,
-            color: Int,
-            textSizePx: Float,
-            weight: Int,
-            maxWidthPx: Int
-        ): android.graphics.Bitmap {
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG).apply {
-                this.color = color
-                this.textSize = textSizePx.coerceAtLeast(8f)
-                typeface = typefaceForWeight(weight)
-                isFakeBoldText = false
-            }
-            val maxW = maxWidthPx.coerceAtLeast(24)
-            val drawn = ellipsizeToWidth(text, paint, maxW)
-            val width = paint.measureText(drawn).toInt().coerceIn(1, maxW)
-            val fm = paint.fontMetrics
-            val height = kotlin.math.ceil((fm.descent - fm.ascent).toDouble()).toInt().coerceAtLeast(1)
-            val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
-            val canvas = android.graphics.Canvas(bitmap)
-            canvas.drawText(drawn, 0f, -fm.ascent, paint)
-            return bitmap
         }
 
         private fun progressBitmap(fill: Int, track: Int, ratio: Float): android.graphics.Bitmap {
