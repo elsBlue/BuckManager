@@ -9,6 +9,8 @@ import android.content.Intent
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
@@ -138,9 +140,8 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
             val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(bitmap)
             val scale = pxPerDp.coerceAtLeast(0.5f)
-            val aa = 0.5f
 
-            val outer = RectF(aa, aa, width - aa, height - aa)
+            val outer = RectF(0f, 0f, width.toFloat(), height.toFloat())
             val radii = widgetCornerRadiiPx(config, scale)
             val outerPath = Path()
             outerPath.addRoundRect(outer, radii, Path.Direction.CW)
@@ -174,8 +175,6 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                 } catch (_: Exception) {}
             }
 
-            canvas.save()
-            canvas.clipPath(outerPath)
             canvas.drawPath(outerPath, paint)
 
             if (!config.backgroundImageUri.isNullOrBlank()) {
@@ -184,12 +183,23 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
                     val bgBmp = android.graphics.BitmapFactory.decodeStream(inputStream)
                     inputStream?.close()
                     if (bgBmp != null) {
-                        canvas.drawBitmap(bgBmp, coverSrcRect(bgBmp.width, bgBmp.height, width, height), Rect(0, 0, width, height), null)
+                        val layer = canvas.saveLayer(outer, null)
+                        val bmpPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+                        canvas.drawBitmap(
+                            bgBmp,
+                            coverSrcRect(bgBmp.width, bgBmp.height, width, height),
+                            outer,
+                            bmpPaint
+                        )
                         if (config.dimOpacity > 0) {
-                            val dimPaint = Paint()
-                            dimPaint.color = android.graphics.Color.argb((config.dimOpacity * 2.55).toInt().coerceIn(0, 255), 0, 0, 0)
-                            canvas.drawPath(outerPath, dimPaint)
+                            val dimAlpha = (config.dimOpacity * 2.55).toInt().coerceIn(0, 255)
+                            canvas.drawColor(android.graphics.Color.argb(dimAlpha, 0, 0, 0))
                         }
+                        val maskPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+                        maskPaint.color = android.graphics.Color.BLACK
+                        maskPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+                        canvas.drawPath(outerPath, maskPaint)
+                        canvas.restoreToCount(layer)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -234,7 +244,6 @@ class GoalAppWidgetProvider : AppWidgetProvider() {
             }
 
             drawWidgetForeground(context, canvas, config, width, height, scale)
-            canvas.restore()
             return bitmap
         }
 
